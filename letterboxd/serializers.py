@@ -19,3 +19,12 @@ class UserProfileSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
     password_confirm = serializers.CharField(write_only=True, required=True)
     img = serializers.ImageField(allow_empty_file=True, allow_null=True, required=False)
+
+    def to_representation(self, instance):
+        return {
+            "username": instance.username,
+            "first_name": instance.first_name,
+            "last_name": instance.last_name,
+            "email": instance.email,
+            "img": instance.profile.img.url if instance.profile and instance.profile.img else None
+        }

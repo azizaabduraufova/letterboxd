@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from letterboxd.models import Genre, Movie, Profile
+from letterboxd.models import Genre, Movie, Profile, User
 from letterboxd.serializers import GenreSerializer, MovieSerializer, UserProfileSerializer
 from django.db.models import Q
 
@@ -91,3 +91,17 @@ def movie_retrieve_update_or_delete(request, pk, format=None):
     elif request.method == 'DELETE':
         movie.delete()
         return Response({"message": "Object is deleted!"}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', 'POST'])
+def user_list_or_create(request, format=None):
+    if request.method == 'GET':
+        users = User.objects.all()
+        serializer = UserProfileSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = UserProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
