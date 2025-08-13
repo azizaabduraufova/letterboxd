@@ -1,0 +1,15 @@
+meta {
+  name: movie update partial
+  type: http
+  seq: 9
+}
+
+patch {
+  url: http://127.0.0.1:8000/movies
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

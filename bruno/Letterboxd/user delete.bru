@@ -1,0 +1,20 @@
+meta {
+  name: user delete
+  type: http
+  seq: 16
+}
+
+delete {
+  url: http://127.0.0.1:8000/users/
+  body: json
+  auth: none
+}
+
+params:query {
+  ~superuser: True
+  ~staff: False
+}
+
+settings {
+  encodeUrl: true
+}

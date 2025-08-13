@@ -1,0 +1,32 @@
+meta {
+  name: user create
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://127.0.0.1:8000/users/
+  body: multipartForm
+  auth: none
+}
+
+body:json {
+  {
+    "username": "emily",
+    "email": "emily@gmail.com",
+    "password": "123",
+    "password_confirm": "123"
+  }
+}
+
+body:multipart-form {
+  username: lila
+  email: lila@gmail.com @contentType(email)
+  password: 123
+  password_confirm: 123
+  img: @file(/Users/azizataylorsversion/Downloads/IMG_1913.JPG)
+}
+
+settings {
+  encodeUrl: true
+}
