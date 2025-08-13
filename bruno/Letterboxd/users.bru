@@ -1,13 +1,18 @@
 meta {
   name: users
   type: http
-  seq: 9
+  seq: 11
 }
 
 get {
   url: http://127.0.0.1:8000/users/
-  body: none
+  body: json
   auth: none
+}
+
+params:query {
+  ~superuser: True
+  ~staff: False
 }
 
 settings {

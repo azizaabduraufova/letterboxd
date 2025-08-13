@@ -6,6 +6,7 @@ from letterboxd.models import Genre, Movie, Profile, User
 from letterboxd.serializers import GenreSerializer, MovieSerializer, UserProfileSerializer
 from django.db.models import Q
 
+
 # CRUD for Genre
 @api_view(['GET', 'POST'])
 def genre_list_or_create(request, format=None):
@@ -23,6 +24,7 @@ def genre_list_or_create(request, format=None):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def genre_retrieve_update_or_delete(request, pk, format=None):
@@ -43,11 +45,12 @@ def genre_retrieve_update_or_delete(request, pk, format=None):
         genre.delete()
         return Response({"message": "Object is deleted!"}, status=status.HTTP_204_NO_CONTENT)
 
+
 @api_view(['GET', 'POST'])
 def movie_list_or_create(request, format=None):
     if request.method == 'GET':
         title = request.query_params.get('title')
-        year  = request.query_params.get('year')
+        year = request.query_params.get('year')
         director = request.query_params.get('director')
         genre = request.query_params.get('genre')
         filters = Q()
@@ -70,7 +73,8 @@ def movie_list_or_create(request, format=None):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+
+@api_view(['GET', 'PUT','PATCH', 'DELETE'])
 def movie_retrieve_update_or_delete(request, pk, format=None):
     try:
         movie = Movie.objects.get(pk=pk)
@@ -88,20 +92,61 @@ def movie_retrieve_update_or_delete(request, pk, format=None):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    elif request.method == 'PATCH':
+        serializer = MovieSerializer(movie, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     elif request.method == 'DELETE':
         movie.delete()
         return Response({"message": "Object is deleted!"}, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['GET', 'POST'])
 def user_list_or_create(request, format=None):
     if request.method == 'GET':
         users = User.objects.all()
-        serializer = UserProfileSerializer(users, many=True)
+        superuser = request.query_params.get('superuser', None)
+        staff = request.query_params.get('staff', None)
+        if superuser is not None:
+            users = users.filter(is_superuser=(superuser.lower() == 'true'))
+        if staff is not None:
+            users = users.filter(is_staff=(staff.lower() == 'true'))
+        serializer = UserProfileSerializer(users, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
         serializer = UserProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def user_retrieve_update_or_delete(request, pk, format=None):
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({"message": "Object not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = UserProfileSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        serializer = UserProfileSerializer(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PATCH':
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        user.delete()
+        return Response({"message": "Object is deleted!"}, status=status.HTTP_204_NO_CONTENT)
