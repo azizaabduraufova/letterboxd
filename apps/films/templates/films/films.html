@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Popular Films</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            background-color: #111;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .films {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        .film {
+            text-align: center;
+            background: #222;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .film img {
+            width: 100%;
+            border-radius: 6px;
+        }
+        .film h3 {
+            margin: 10px 0 5px;
+            font-size: 1rem;
+        }
+        .film p {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Popular Films</h1>
+<div class="films">
+    {% for film in films %}
+        <div class="film">
+            {% if film.poster_path %}
+                <img src="{{ film.poster_path }}" alt="{{ film.title }}">
+            {% else %}
+                <div style="height:270px;background:#333;border-radius:6px;display:flex;align-items:center;justify-content:center;">No Image</div>
+            {% endif %}
+            <h3>{{ film.title }}</h3>
+            <p>{{ film.release_date }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

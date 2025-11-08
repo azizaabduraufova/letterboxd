@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letterboxd Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+</head>
+<body style="margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-image: url('{% static 'images/background.jpg' %}');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    height: 100vh;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;">
+
+    <nav>
+        <div class="nav-left" style="color: #fc5b9b">Letterboxd</div>
+        <div class="nav-right">
+            <a href="#" style="color: #fc5b9b">Sign in</a>
+            <a href="{% url 'create_profile' %}" style="color: #fc5b9b">Create account</a>
+            <a href="{% url 'films' %}" style="color: #fc5b9b">Films</a>
+            <div class="search-bar">
+                <input type="text" placeholder="Search...">
+                <button>🔍</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="center-text">
+        <h1>Track films you’ve watched.<br>Save those you want to see.<br>Tell your friends what’s good.</h1>
+        <a href="#" class="button">Get started — it’s free!</a>
+    </div>
+
+    <footer>
+        Blade Runner 2049 (2017)
+    </footer>
+
+</body>
+</html>
