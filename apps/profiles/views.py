@@ -51,31 +51,35 @@ def sign_in(request):
     return render(request, "profiles/sign_in.html", {"form": form})
 
 
-
-
-def user_profile_view(request, username):
-    # Get the Profile object for this user
+def profile_view(request, username):
+    from apps.films.models import Film
+    # Get the Profile object
     user_profile = get_object_or_404(Profile, user__username=username)
+
+    # Total films watched (assuming you track it via reviews or watchlist)
+    total_films = user_profile.reviews.count()
+
+    # Followers / following counts
+    following_count = user_profile.following.count()
+    followers_count = user_profile.followers.count()
 
     # Favorite films (max 4)
     favorite_films = user_profile.favorite_films.all()[:4]
 
-    # Recent films (latest 4 ProfileFilm entries)
-    recent_films = ProfileFilm.objects.filter(profile=user_profile).order_by('-created_at')[:4]
+    # Recent films watched (e.g., last 4 reviews)
+    recent_films = Film.objects.filter(reviews__profile=user_profile).order_by('-reviews__created_at')[:4]
 
-    # Counts
-    total_films = user_profile.favorite_films.count()
-    following_count = user_profile.following.count()
-    followers_count = user_profile.followers.count()
+    # Last 3 reviews
+    recent_reviews = user_profile.reviews.order_by('-created_at')[:3]
 
     context = {
         'user_profile': user_profile,
-        'favorite_films': favorite_films,
-        'recent_films': recent_films,
         'total_films': total_films,
         'following_count': following_count,
         'followers_count': followers_count,
+        'favorite_films': favorite_films,
+        'recent_films': recent_films,
+        'recent_reviews': recent_reviews,
     }
 
-    return render(request, 'profile.html', context)
-
+    return render(request, 'profiles/profile.html', context)

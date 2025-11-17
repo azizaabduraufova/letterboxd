@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,8 +67,8 @@
 
         .film-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
         }
 
         .film-grid img {
@@ -83,6 +82,66 @@
             transform: scale(1.04);
             opacity: 0.9;
         }
+
+        /* Reviews section */
+        .review-item {
+            display: flex;
+            gap: 15px;
+            background: #1e2226;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .review-item img {
+            width: 120px;
+            height: auto;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .review-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .review-content p {
+            margin: 0;
+        }
+
+        .review-content .film-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .review-content .rating {
+            font-weight: 500;
+        }
+
+        .review-content .date {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .review-content .comment {
+            margin-top: 4px;
+        }
+
+        .profile-website {
+            color: #f2f2f2;
+            text-decoration: none;
+        }
+
+        .profile-website:visited {
+            color: #f2f2f2;
+        }
+
+        .profile-website:hover {
+            text-decoration: underline; /* optional for hover effect */
+        }
+
     </style>
 </head>
 
@@ -106,6 +165,16 @@
                 <div><span>{{ following_count }}</span> following</div>
                 <div><span>{{ followers_count }}</span> followers</div>
             </div>
+            <p>📍 {{ user_profile.location }}</p>
+            {% if user_profile.website %}
+                <p>
+                    <a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer"
+                       class="profile-website">
+                        {{ user_profile.website }}
+                    </a>
+                </p>
+            {% endif %}
+
         </div>
     </div>
 
@@ -126,6 +195,26 @@
             <img src="{{ film.poster }}" alt="{{ film.title }}">
         {% empty %}
             <p>No recent films.</p>
+        {% endfor %}
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="section-title">Recent Reviews</div>
+    <div>
+        {% for review in recent_reviews %}
+            <div class="review-item">
+                <img src="{{ review.film.poster }}" alt="{{ review.film.title }}">
+                <div class="review-content">
+                    <p class="film-title">{{ review.film.title }}</p>
+                    <p class="rating">Rating: {{ review.rating }}/5</p>
+                    <p class="date">{{ review.created_at|date:"M d, Y" }}</p>
+                    {% if review.comment %}
+                        <p class="comment">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No reviews yet.</p>
         {% endfor %}
     </div>
 

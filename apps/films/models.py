@@ -50,7 +50,7 @@ class Film(models.Model):
 class Review(models.Model):
     profile = models.ForeignKey('profiles.Profile', on_delete=models.CASCADE, related_name='reviews')
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='reviews')
-    rating = models.PositiveIntegerField()
+    rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

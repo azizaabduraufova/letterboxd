@@ -1,6 +1,6 @@
 # apps/films/management/commands/import_tmdb.py
 import os
-
+from tmdbv3api import TMDb, Discover
 from django.core.management.base import BaseCommand
 from apps.films.models import Film, Actor, Director, Genre
 from tmdbv3api import TMDb, Movie, Person
@@ -16,6 +16,13 @@ class Command(BaseCommand):
     help = "Import ~100 films from 2000s and 2010s from TMDb, including actors and directors"
 
     def handle(self, *args, **kwargs):
+        self.stdout.write("Deleting existing films, actors, directors, and genres...")
+        Film.objects.all().delete()
+        Actor.objects.all().delete()
+        Director.objects.all().delete()
+        Genre.objects.all().delete()
+        self.stdout.write(self.style.SUCCESS("Deleted all existing records."))
+
         for decade_start in [2000, 2010]:
             films_added = 0
             page = 1
