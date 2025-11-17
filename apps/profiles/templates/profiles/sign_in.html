@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Letterboxd Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: url("{% static 'images/background.jpg' %}") no-repeat center center/cover;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 25px;
+            font-weight: 800;
+            font-size: 2rem;
+        }
+
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-container label {
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .login-container input {
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .login-container button {
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background-color: #00c030;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-container button:hover {
+            background-color: #00a828;
+        }
+
+        .divider {
+            margin: 20px 0;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .messages {
+            margin-bottom: 15px;
+            color: #ff6666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h1>Sign In</h1>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Sign In</button>
+    </form>
+
+</div>
+
+</body>
+</html>

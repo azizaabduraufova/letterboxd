@@ -1,10 +1,69 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Letterboxd Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
 </head>
-<body>
+
+<body style="margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+    min-height: 100vh;
+    color: #ffffff;">
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-left" style="color: #fc5b9b">Letterboxd</div>
+        <div class="nav-right">
+            <a href="{#  #}" style="color: #fc5b9b">Your Films</a>
+            <a href="{% url 'profile' request.user.username %}" style="color: #fc5b9b">Profile</a>
+            <a href="{#  #}" style="color: #fc5b9b">Sign Out</a>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Search...">
+                <button>🔍</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FEED CONTAINER -->
+    <div style="padding: 40px;">
+        <h1 style="font-weight: 800; margin-bottom: 20px;">
+            Welcome back, {{ user.username }}.
+        </h1>
+
+        <!-- Popular Films This Week -->
+        <section style="margin-top: 40px;">
+            <h2 style="font-weight: 600; margin-bottom: 10px;">Popular films this week</h2>
+            <div style="display: flex; gap: 20px;">
+                {% for film in popular_films %}
+                    <div style="width: 150px; text-align: center;">
+                        <img src="{{ film.poster_url }}" alt="{{ film.title }}" style="width: 100%; border-radius: 8px;">
+                        <p style="margin-top: 8px;">{{ film.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- New Films From Friends -->
+        <section style="margin-top: 40px;">
+            <h2 style="font-weight: 600; margin-bottom: 10px;">New from your friends</h2>
+            <div style="display: flex; gap: 20px;">
+                {% for film in friends_films %}
+                    <div style="width: 150px; text-align: center;">
+                        <img src="{{ film.poster_url }}" alt="{{ film.title }}" style="width: 100%; border-radius: 8px;">
+                        <p style="margin-top: 8px;">{{ film.title }}</p>
+                        <span style="opacity: 0.7; font-size: 0.9rem;">by {{ film.friend_username }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
 
 </body>
 </html>

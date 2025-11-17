@@ -1,10 +1,135 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user_profile.user.username }} - Profile</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: linear-gradient(180deg, #1b1f24 0%, #111418 100%);
+            color: #e5e5e5;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #2b2f34;
+        }
+
+        .profile-header img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #333;
+        }
+
+        .profile-info h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .stats {
+            margin-top: 8px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .stats span {
+            font-weight: 600;
+        }
+
+        .section-title {
+            margin-top: 40px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .film-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .film-grid img {
+            width: 100%;
+            border-radius: 6px;
+            object-fit: cover;
+            transition: 0.2s;
+        }
+
+        .film-grid img:hover {
+            transform: scale(1.04);
+            opacity: 0.9;
+        }
+    </style>
 </head>
+
 <body>
-<h1>Your Profile</h1>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="profile-header">
+        {% if user_profile.avatar %}
+            <img src="{{ user_profile.avatar.url }}" alt="Profile picture">
+        {% else %}
+            <img src="{% static 'images/default_avatar.jpg' %}" alt="Default avatar">
+        {% endif %}
+
+        <div class="profile-info">
+            <h1>{{ user_profile.user.username }}</h1>
+
+            <div class="stats">
+                <div><span>{{ total_films }}</span> films</div>
+                <div><span>{{ following_count }}</span> following</div>
+                <div><span>{{ followers_count }}</span> followers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAVORITE FILMS -->
+    <div class="section-title">Favorite Films</div>
+    <div class="film-grid">
+        {% for film in favorite_films %}
+            <img src="{{ film.poster }}" alt="{{ film.title }}">
+        {% empty %}
+            <p>You have no favorites yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <div class="section-title">Recent Activity</div>
+    <div class="film-grid">
+        {% for film in recent_films %}
+            <img src="{{ film.poster }}" alt="{{ film.title }}">
+        {% empty %}
+            <p>No recent films.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
 </body>
 </html>

@@ -34,6 +34,7 @@ class Profile(models.Model):
 class ProfileFilm(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     film = models.ForeignKey('films.Film', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('profile', 'film')
