@@ -1,0 +1,358 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ film.title }} - {{ film.year }}</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        :root {
+            --nav-height: 68px; /* update this if your navbar height changes */
+        }
+
+        /* Basic reset */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /*
+          Use the film backdrop as the full-page background so it sits behind
+          both the fixed navbar and the content container.
+        */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #ffffff;
+            background-image: url('{{ film.backdrop_url }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* keeps background fixed while scrolling */
+            padding-top: var(--nav-height); /* reserve space so fixed navbar doesn't cover content */
+            box-sizing: border-box;
+        }
+
+        /* dim the background for better text contrast (doesn't block clicks) */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* fixed navbar sits above the background */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            color: #fc5b9b;
+            z-index: 30; /* highest so links are clickable */
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #ff79b0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
+        }
+
+        /* main content sits above overlay but below the nav in stacking order */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto 60px; /* top margin is after the navbar space; adjust for desired vertical spacing */
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 20; /* above the overlay, below nav (nav z-index:30) */
+            color: #eaeaea;
+        }
+
+        .poster {
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .poster img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .details {
+            flex: 1;
+        }
+
+        .details h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .details span {
+            color: #aaa;
+            margin-left: 10px;
+        }
+
+        .tagline {
+            font-style: italic;
+            margin-top: 10px;
+            color: #ccc;
+        }
+
+        .description {
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .rating {
+            margin-top: 15px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 5px;
+        }
+
+        .stars span {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .stars span.active {
+            color: gold;
+        }
+
+        .sections {
+            margin-top: 25px;
+        }
+
+        .sections h3 {
+            margin-bottom: 5px;
+        }
+
+        .tag-button {
+            display: inline-block;
+            background: #333;
+            padding: 7px 14px;
+            border-radius: 6px;
+            color: #eee;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.15s ease;
+        }
+
+        .tag-button:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .pill-btn {
+            display: inline-block;
+            background: #333;
+            padding: 7px 14px;
+            border-radius: 20px;
+            color: #eee;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pill-btn:hover {
+            background: #444;
+        }
+
+        /* make container spacing clean */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                margin: 24px 16px 40px;
+            }
+
+            .poster {
+                width: 180px;
+                margin: 0 auto;
+            }
+
+            nav {
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- full-page overlay for dimming the backdrop -->
+<div class="bg-overlay" aria-hidden="true"></div>
+
+<!-- fixed navbar (stays on top) -->
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{#  #}">Your Films</a>
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+        <a href="{#  #}">Sign Out</a>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button>🔍</button>
+        </div>
+    </div>
+</nav>
+
+<!-- main content — background (backdrop) is on the body behind this -->
+<div class="container">
+    <div class="poster">
+        <img src="{{ film.poster }}" alt="{{ film.title }}">
+    </div>
+
+    <div class="details">
+        <h1>{{ film.title }} <span>{{ film.year }}</span></h1>
+        <p>Directed by
+            <strong>
+                {% for director in film.directors.all %}
+                    <a href="{% url 'director_detail' slug=director.slug %}">{{ director.name }}</a>{% if not forloop.last %}
+                    , {% endif %}
+                {% empty %}
+                    Unknown
+                {% endfor %}
+            </strong>
+        </p>
+
+        {% if film.tagline %}<p class="tagline">{{ film.tagline }}</p>{% endif %}
+
+        <p class="description">{{ film.description }}</p>
+
+        <div class="buttons">
+            <button class="tag-button">Mark as Watched</button>
+
+            {% if is_in_watchlist %}
+                <button class="tag-button">Remove from Watchlist</button>
+            {% else %}
+                <button class="tag-button">Add to Watchlist</button>
+            {% endif %}
+
+            <button class="tag-button">Review / Log</button>
+        </div>
+
+
+        <div class="rating">
+            <div class="stars">
+                {% for i in rating_range %}
+                    <span class="{% if film.rating and i <= film.rating %}active{% endif %}">★</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <h3>Cast</h3>
+        <div class="tag-list">
+            {% for actor in film.actors.all %}
+                <a href="{% url 'actor_detail' slug=actor.slug %}" class="tag-button">{{ actor.name }}</a>
+            {% empty %}
+                <span class="tag-button" style="opacity:0.6; cursor:default;">No cast available</span>
+            {% endfor %}
+        </div>
+
+
+        <h3>Genres</h3>
+        <div class="tag-list">
+            {% for genre in film.genres.all %}
+                <a href="#" class="tag-button">{{ genre.name }}</a>
+            {% empty %}
+                <span class="tag-button" style="opacity:0.6; cursor:default;">No genres available</span>
+            {% endfor %}
+        </div>
+
+
+        <h3>Details</h3>
+        <div class="tag-list">
+            {% if film.duration %}
+                <p class="tag-button" style="cursor:default;">Runtime: {{ film.duration }}m</p>{% endif %}
+            {% if film.language %}
+                <p class="tag-button" style="cursor:default;">Language: {{ film.language }}</p>{% endif %}
+            {% if film.country %}
+                <p class="tag-button" style="cursor:default;">Country: {{ film.country }}</p>{% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // simple star click behaviour
+    const stars = document.querySelectorAll('.stars span');
+    stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+            stars.forEach((s, i) => s.classList.toggle('active', i <= index));
+        });
+    });
+</script>
+</body>
+</html>

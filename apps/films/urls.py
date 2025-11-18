@@ -6,4 +6,7 @@ urlpatterns = [
     path('', views.home_guest, name='home_guest'),
     path('home/', views.home_authenticated, name='home_authenticated'),
     path('films/', views.films, name='films'),
+    path('film/<slug:slug>/', views.film_detail, name='film_detail'),
+    path('actor/<slug:slug>/', views.actor_detail, name='actor_detail'),
+    path('director/<slug:slug>/', views.director_detail, name='director_detail'),
 ]

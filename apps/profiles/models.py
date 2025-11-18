@@ -10,6 +10,12 @@ class Profile(models.Model):
 
     # Favorites
     favorite_films = models.ManyToManyField('films.Film', related_name='favorited_by', blank=True)
+    watched_films = models.ManyToManyField(
+        'films.Film',
+        through='WatchedFilm',
+        related_name='watched_by',
+        blank=True
+    )
     watchlist = models.ManyToManyField('films.Film', related_name='watchlisted_by', blank=True)
 
     # Following/followers
@@ -41,3 +47,15 @@ class ProfileFilm(models.Model):
 
     def __str__(self):
         return f"{self.profile.user.username} - {self.film.title}"
+
+class WatchedFilm(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+    film = models.ForeignKey('films.Film', on_delete=models.CASCADE)
+    watched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('profile', 'film')
+
+    def __str__(self):
+        return f"{self.profile.user.username} watched {self.film.title}"
+

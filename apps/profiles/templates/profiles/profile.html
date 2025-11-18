@@ -182,7 +182,9 @@
     <div class="section-title">Favorite Films</div>
     <div class="film-grid">
         {% for film in favorite_films %}
-            <img src="{{ film.poster }}" alt="{{ film.title }}">
+            <a href="{% url 'film_detail' film.slug %}">
+                <img src="{{ film.poster }}" alt="{{ film.title }}">
+            </a>
         {% empty %}
             <p>You have no favorites yet.</p>
         {% endfor %}
@@ -192,7 +194,9 @@
     <div class="section-title">Recent Activity</div>
     <div class="film-grid">
         {% for film in recent_films %}
-            <img src="{{ film.poster }}" alt="{{ film.title }}">
+            <a href="{% url 'film_detail' film.slug %}">
+                <img src="{{ film.poster }}" alt="{{ film.title }}">
+            </a>
         {% empty %}
             <p>No recent films.</p>
         {% endfor %}

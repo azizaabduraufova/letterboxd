@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 import requests
 from django.contrib.auth.decorators import login_required
 from .tmdb_client import get_popular_films
+
 
 def home_guest(request):
     return render(request, "films/home_guest.html")
@@ -42,3 +43,31 @@ def films(request):
         'films': films
     }
     return render(request, 'films/films.html', context)
+
+def film_detail(request, slug):
+    from .models import Film
+    film = get_object_or_404(Film, slug=slug)
+    reviews = film.reviews.order_by('-created_at')
+    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    is_in_watchlist = request.user.is_authenticated and request.user.profile.watchlist.filter(id=film.id).exists()
+    rating_range = range(1, 6)
+    # latest reviews first
+    context = {
+        'film': film,
+        'reviews': reviews,
+        'is_in_watchlist': is_in_watchlist,
+        'rating_range': rating_range,
+    }
+    return render(request, 'films/film_detail.html', context)
+
+def actor_detail(request, slug):
+    from .models import Actor
+    actor = get_object_or_404(Actor, slug=slug)
+    films = actor.films.all()
+    return render(request, "films/actor_detail.html", {"actor": actor, "films": films})
+
+def director_detail(request, slug):
+    from .models import Director
+    director = get_object_or_404(Director, slug=slug)
+    films = director.films.all()
+    return render(request, "films/director_detail.html", {"director": director, "films": films})
