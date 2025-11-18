@@ -279,7 +279,7 @@
         <p>Directed by
             <strong>
                 {% for director in film.directors.all %}
-                    <a href="{% url 'director_detail' slug=director.slug %}">{{ director.name }}</a>{% if not forloop.last %}
+                    <a href="{% url 'director_detail' director.slug %}">{{ director.name }}</a>{% if not forloop.last %}
                     , {% endif %}
                 {% empty %}
                     Unknown
@@ -315,7 +315,7 @@
         <h3>Cast</h3>
         <div class="tag-list">
             {% for actor in film.actors.all %}
-                <a href="{% url 'actor_detail' slug=actor.slug %}" class="tag-button">{{ actor.name }}</a>
+                <a href="{% url 'actor_detail' actor.slug %}" class="tag-button">{{ actor.name }}</a>
             {% empty %}
                 <span class="tag-button" style="opacity:0.6; cursor:default;">No cast available</span>
             {% endfor %}

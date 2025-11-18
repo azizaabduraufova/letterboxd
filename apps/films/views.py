@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, get_object_or_404
 import requests
 from django.contrib.auth.decorators import login_required
@@ -24,23 +26,29 @@ def home_authenticated(request):
     })
 
 def films(request):
+    from .models import Film
+    TMDB_API_KEY = os.getenv("TMDB_API_KEY")
     url = f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB_API_KEY}&language=en-US&page=1"
 
     response = requests.get(url)
     data = response.json()
 
-    films = []
+    films_list = []
     if 'results' in data:
         for item in data['results']:
-            films.append({
-                'title': item['title'],
-                'poster_path': f"https://image.tmdb.org/t/p/w500{item['poster_path']}" if item['poster_path'] else None,
-                'overview': item['overview'],
-                'release_date': item['release_date']
-            })
+            # Create or update film in DB
+            film, created = Film.objects.get_or_create(
+                title=item['title'],
+                defaults={
+                    'poster': f"https://image.tmdb.org/t/p/w500{item['poster_path']}" if item.get('poster_path') else None,
+                    'backdrop_path': f"https://image.tmdb.org/t/p/original{item['backdrop_path']}" if item.get('backdrop_path') else None,
+                    'year': int(item['release_date'].split('-')[0]) if item.get('release_date') else None,
+                }
+            )
+            films_list.append(film)
 
     context = {
-        'films': films
+        'films': films_list
     }
     return render(request, 'films/films.html', context)
 

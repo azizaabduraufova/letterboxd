@@ -1,10 +1,240 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ actor.name }}</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        :root {
+            --nav-height: 68px;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #eaeaea;
+            padding-top: var(--nav-height);
+            background-color: #121212; /* no backdrop image */
+            box-sizing: border-box;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            color: #fc5b9b;
+            z-index: 30; /* highest so links are clickable */
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #ff79b0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
+        }
+
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            color: #eaeaea;
+        }
+
+        .profile {
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .profile img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .details {
+            flex: 1;
+        }
+
+        .details h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .bio {
+            margin-top: 15px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        .sections {
+            margin-top: 25px;
+        }
+
+        .sections h3 {
+            margin-bottom: 5px;
+        }
+
+        .tag-button {
+            display: inline-block;
+            background: #333;
+            padding: 7px 14px;
+            border-radius: 6px;
+            color: #eee;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.15s ease;
+        }
+
+        .tag-button:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .films-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .films-grid img {
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .films-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        .tags, .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                margin: 24px 16px 40px;
+            }
+
+            .profile {
+                width: 180px;
+                margin: 0 auto;
+            }
+
+            nav {
+                padding: 0 16px;
+            }
+        }
+    </style>
 </head>
 <body>
+
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{#  #}">Your Films</a>
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+        <a href="{#  #}">Sign Out</a>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button>🔍</button>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+    <div class="profile">
+        {% if actor.image %}
+            <img src="{{ actor.image }}" alt="{{ actor.name }}">
+        {% else %}
+            <img src="{% static 'default_actor.png' %}" alt="{{ actor.name }}">
+        {% endif %}
+    </div>
+
+    <div class="details">
+        <h1>{{ actor.name }}</h1>
+        {% if actor.bio %}
+            <p class="bio">{{ actor.bio }}</p>
+        {% endif %}
+
+        <div class="sections">
+            <h3>Genres</h3>
+            <div class="tag-list">
+                {% for genre in actor.genres.all %}
+                    <a href="#" class="tag-button">{{ genre.name }}</a>
+                {% empty %}
+                    <span class="tag-button" style="opacity:0.6; cursor:default;">No genres</span>
+                {% endfor %}
+            </div>
+
+            <h3>Films</h3>
+            <div class="films-grid">
+                {% for film in actor.films.all %}
+                    <a href="{% url 'film_detail' slug=film.slug %}">
+                        <img src="{{ film.poster }}" alt="{{ film.title }}">
+                    </a>
+                {% empty %}
+                    <span class="tag-button" style="opacity:0.6; cursor:default;">No films available</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

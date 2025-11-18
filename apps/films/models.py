@@ -22,6 +22,9 @@ class Actor(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse('actor_detail', args=[self.slug])
+
     def __str__(self):
         return self.name
 
@@ -38,6 +41,9 @@ class Director(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('director_detail', args=[self.slug])
 
     def __str__(self):
         return self.name
@@ -63,6 +69,9 @@ class Film(models.Model):
         if not self.slug:
             self.slug = slugify(f"{self.title}-{self.year}")
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('film_detail', args=[self.slug])
 
     def __str__(self):
         return f"{self.title} ({self.year})"
