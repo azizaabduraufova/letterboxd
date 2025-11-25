@@ -1,12 +1,25 @@
 import os
 
-from django.shortcuts import render, get_object_or_404, redirect
 import requests
 from django.contrib.auth.decorators import login_required
-from .tmdb_client import get_popular_films
+from django.shortcuts import render, get_object_or_404, redirect
+
 from apps.films.models import Film, Actor, Director, Review
 from apps.profiles.models import WatchedFilm
 from .forms import ReviewForm
+from .tmdb_client import get_popular_films
+
+
+def _get_backdrop_url(film):
+    """Helper function to construct the backdrop URL for a film."""
+    if film.backdrop_path:
+        if film.backdrop_path.startswith('http'):
+            return film.backdrop_path
+        else:
+            return f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    return ""
+
+
 def home_guest(request):
     return render(request, "films/home_guest.html")
 
@@ -55,7 +68,7 @@ def films(request):
 def film_detail(request, slug):
     film = get_object_or_404(Film, slug=slug)
     reviews = film.reviews.order_by('-created_at')
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    film.backdrop_url = _get_backdrop_url(film)
     is_in_watchlist = request.user.is_authenticated and request.user.profile.watchlist.filter(id=film.id).exists()
     rating_range = range(1, 6)
     watched = (
@@ -110,11 +123,13 @@ def review_film(request, slug):
 def film_reviews(request, slug):
     film = get_object_or_404(Film, slug=slug)
     reviews = film.reviews.select_related('profile__user').order_by('-created_at')
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    film.backdrop_url = _get_backdrop_url(film)
+    is_in_watchlist = request.user.is_authenticated and request.user.profile.watchlist.filter(id=film.id).exists()
 
     context = {
         'film': film,
         'reviews': reviews,
+        'is_in_watchlist': is_in_watchlist,
 
     }
     return render(request, 'films/review_list.html', context)
@@ -122,7 +137,7 @@ def film_reviews(request, slug):
 @login_required
 def create_view(request, slug):
     film = get_object_or_404(Film, slug=slug)
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    film.backdrop_url = _get_backdrop_url(film)
 
     # prevent duplicate reviews
     if Review.objects.filter(film=film, profile=request.user.profile).exists():
