@@ -3,25 +3,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{{ film.title }} - {{ film.year }}</title>
+    <meta charset="UTF-8">
+    <title>{{ film.title }} — Reviews</title>
     <link rel="stylesheet" href="{% static 'main.css' %}">
     <style>
         :root {
-            --nav-height: 68px; /* update this if your navbar height changes */
+            --nav-height: 68px;
         }
 
-        /* Basic reset */
         html, body {
             height: 100%;
             margin: 0;
         }
 
-        /*
-          Use the film backdrop as the full-page background so it sits behind
-          both the fixed navbar and the content container.
-        */
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
@@ -31,12 +25,11 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed; /* keeps background fixed while scrolling */
-            padding-top: var(--nav-height); /* reserve space so fixed navbar doesn't cover content */
+            background-attachment: fixed;
+            padding-top: var(--nav-height);
             box-sizing: border-box;
         }
 
-        /* dim the background for better text contrast (doesn't block clicks) */
         .bg-overlay {
             position: fixed;
             inset: 0;
@@ -45,7 +38,6 @@
             pointer-events: none;
         }
 
-        /* fixed navbar sits above the background */
         nav {
             position: fixed;
             top: 0;
@@ -56,9 +48,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            background: rgba(18, 18, 18, 0.95);
             color: #fc5b9b;
-            z-index: 30; /* highest so links are clickable */
+            z-index: 30;
             box-sizing: border-box;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
@@ -97,10 +89,9 @@
             color: #eee;
         }
 
-        /* main content sits above overlay but below the nav in stacking order */
         .container {
             max-width: 1000px;
-            margin: 40px auto 60px; /* top margin is after the navbar space; adjust for desired vertical spacing */
+            margin: 40px auto 60px;
             background-color: rgba(30, 30, 30, 0.95);
             border-radius: 10px;
             padding: 20px;
@@ -108,7 +99,7 @@
             gap: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             position: relative;
-            z-index: 20; /* above the overlay, below nav (nav z-index:30) */
+            z-index: 20;
             color: #eaeaea;
         }
 
@@ -210,7 +201,6 @@
             background: #444;
         }
 
-        /* make container spacing clean */
         .tags {
             display: flex;
             flex-wrap: wrap;
@@ -229,6 +219,68 @@
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 8px;
+        }
+
+        /* Reviews area */
+        .reviews-panel {
+            margin-top: 18px;
+        }
+
+        .review-card {
+            background: rgba(15, 15, 15, 0.7);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            color: #eaeaea;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+
+        .review-header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 100%;
+            object-fit: cover;
+        }
+
+        .review-meta small {
+            color: #bdbdbd;
+        }
+
+        .review-stars {
+            color: gold;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .review-text {
+            margin-top: 6px;
+            line-height: 1.45;
+            color: #ddd;
+        }
+
+        .back-link {
+            color: #fc5b9b;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        /* profile link styling so avatar and username look consistent with UI */
+        .profile-link {
+            color: inherit;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .profile-link:hover {
+            color: #fc5b9b;
+            text-decoration: underline;
         }
 
         @media (max-width: 900px) {
@@ -250,10 +302,8 @@
 </head>
 <body>
 
-<!-- full-page overlay for dimming the backdrop -->
 <div class="bg-overlay" aria-hidden="true"></div>
 
-<!-- fixed navbar (stays on top) -->
 <nav>
     <div class="nav-left">Letterboxd</div>
     <div class="nav-right">
@@ -268,7 +318,6 @@
     </div>
 </nav>
 
-<!-- main content — background (backdrop) is on the body behind this -->
 <div class="container">
     <div class="poster">
         <img src="{{ film.poster }}" alt="{{ film.title }}">
@@ -276,101 +325,66 @@
 
     <div class="details">
         <h1>{{ film.title }} <span>{{ film.year }}</span></h1>
-        <p>Directed by
-            <strong>
-                {% for director in film.directors.all %}
-                    <a href="{% url 'director_detail' director.slug %}">{{ director.name }}</a>{% if not forloop.last %}
-                    , {% endif %}
-                {% empty %}
-                    Unknown
-                {% endfor %}
-            </strong>
+
+        <p class="description">
+            {% if film.tagline %}<em class="tagline">{{ film.tagline }}</em>{% endif %}
+            {% if film.description %}{{ film.description }}{% endif %}
         </p>
 
-        {% if film.tagline %}<p class="tagline">{{ film.tagline }}</p>{% endif %}
-
-        <p class="description">{{ film.description }}</p>
-
         <div class="buttons">
-
-            <form action="{% url 'mark_as_watched' film.slug %}" method="POST">
-                {% csrf_token %}
-                {% if watched %}
-                    <button type="submit" class="tag-button">Watched ✔</button>
-                {% else %}
-                    <button type="submit" class="tag-button">Mark as Watched</button>
-                {% endif %}
-            </form>
-
+            <a href="{% url 'film_detail' film.slug %}" class="tag-button">← Back to film</a>
+            <a href="{% url 'review_film' film.slug %}" class="tag-button">Review / Log</a>
 
             {% if is_in_watchlist %}
-                <a href="{% url 'toggle_watchlist' film.slug %}" class="tag-button">
-                    Remove from Watchlist
-                </a>
+                <a href="{% url 'toggle_watchlist' film.slug %}" class="tag-button">Remove from Watchlist</a>
             {% else %}
-                <a href="{% url 'toggle_watchlist' film.slug %}" class="tag-button">
-                    Add to Watchlist
-                </a>
+                <a href="{% url 'toggle_watchlist' film.slug %}" class="tag-button">Add to Watchlist</a>
             {% endif %}
-            <a href="{% url 'film_reviews' film.slug %}" class="tag-button">View all reviews</a>
-
-            <a href="{% url 'review_film' film.slug %}" class="tag-button">
-                Review / Log
-            </a>
-
-
         </div>
 
+        <div class="reviews-panel">
+            <h3 style="margin-top:18px; margin-bottom:10px;">Reviews</h3>
 
-        <div class="rating">
-            <div class="stars">
-                {% for i in rating_range %}
-                    <span class="{% if film.rating and i <= film.rating %}active{% endif %}">★</span>
-                {% endfor %}
-            </div>
+            {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <a href="{% url 'profile' review.profile.user.username %}" class="profile-link" title="View {{ review.profile.user.username }}'s profile">
+                                    {% if review.profile.avatar %}
+                                        <img src="{{ review.profile.avatar.url }}" class="avatar" alt="{{ review.profile.user.username }}">
+                                    {% else %}
+                                        <img src="{% static 'images/default_avatar.jpg' %}" class="avatar" alt="Default avatar">
+                                    {% endif %}
+                                </a>
+
+                                <div class="review-meta">
+                                    <strong style="display:block;">
+                                        <a href="{% url 'profile' review.profile.user.username %}" class="profile-link">{{ review.profile.user.username }}</a>
+                                    </strong>
+                                    <div class="review-stars">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                ★
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <small>{{ review.created_at|date:"F j, Y" }}</small>
+                                </div>
+                            </div>
+
+                            <p class="review-text">{{ review.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color:#cfcfcf;">No reviews yet.</p>
+            {% endif %}
         </div>
-
-        <h3>Cast</h3>
-        <div class="tag-list">
-            {% for actor in film.actors.all %}
-                <a href="{% url 'actor_detail' actor.slug %}" class="tag-button">{{ actor.name }}</a>
-            {% empty %}
-                <span class="tag-button" style="opacity:0.6; cursor:default;">No cast available</span>
-            {% endfor %}
-        </div>
-
-
-        <h3>Genres</h3>
-        <div class="tag-list">
-            {% for genre in film.genres.all %}
-                <a href="#" class="tag-button">{{ genre.name }}</a>
-            {% empty %}
-                <span class="tag-button" style="opacity:0.6; cursor:default;">No genres available</span>
-            {% endfor %}
-        </div>
-
-
-        <h3>Details</h3>
-        <div class="tag-list">
-            {% if film.duration %}
-                <p class="tag-button" style="cursor:default;">Runtime: {{ film.duration }}m</p>{% endif %}
-            {% if film.language %}
-                <p class="tag-button" style="cursor:default;">Language: {{ film.language }}</p>{% endif %}
-            {% if film.country %}
-                <p class="tag-button" style="cursor:default;">Country: {{ film.country }}</p>{% endif %}
-        </div>
-
     </div>
 </div>
 
-<script>
-    // simple star click behaviour
-    const stars = document.querySelectorAll('.stars span');
-    stars.forEach((star, index) => {
-        star.addEventListener('click', () => {
-            stars.forEach((s, i) => s.classList.toggle('active', i <= index));
-        });
-    });
-</script>
 </body>
 </html>

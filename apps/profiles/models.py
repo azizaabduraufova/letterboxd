@@ -28,7 +28,6 @@ class Profile(models.Model):
         return self.following.filter(followers=self)
 
     def save(self, *args, **kwargs):
-        """Ensure no more than 4 favorite films"""
         super().save(*args, **kwargs)
         if self.favorite_films.count() > 4:
             raise ValueError("Cannot have more than 4 favorite films")

@@ -3,17 +3,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user_profile.user.username }} - Profile</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
 
     <style>
-        body {
+        :root {
+            --nav-height: 68px; /* update this if your navbar height changes */
+        }
+
+        /* Basic reset */
+        html, body {
+            height: 100%;
             margin: 0;
-            font-family: "Inter", sans-serif;
-            background: linear-gradient(180deg, #1b1f24 0%, #111418 100%);
-            color: #e5e5e5;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            background-color: #1d1726;
+            background-attachment: fixed;
+            padding-top: var(--nav-height);
+            box-sizing: border-box;
+        }
+
+        /* dim the background for better text contrast (doesn't block clicks) */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* fixed navbar sits above the background */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            color: #fc5b9b;
+            z-index: 30; /* highest so links are clickable */
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #ff79b0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
         }
 
         .container {
@@ -26,8 +96,9 @@
             display: flex;
             align-items: center;
             gap: 25px;
-            padding-bottom: 40px;
             border-bottom: 1px solid #2b2f34;
+            padding-bottom: 30px;
+            position: relative;
         }
 
         .profile-header img {
@@ -41,8 +112,6 @@
         .profile-info h1 {
             margin: 0;
             font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
         }
 
         .stats {
@@ -57,12 +126,33 @@
             font-weight: 600;
         }
 
-        .section-title {
-            margin-top: 40px;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-            font-weight: 700;
+        .edit-profile-btn, .follow-btn {
+            position: absolute;
+            right: 0;
+            top: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+
+        .edit-profile-btn {
+            background: #fc5b9b;
+            color: #fff;
+        }
+
+        .edit-profile-btn:hover {
+            background: #ff89b9;
+        }
+
+        .follow-btn {
+            background: #444;
             color: #ffffff;
+        }
+
+        .follow-btn:hover {
+            background: #555;
         }
 
         .film-grid {
@@ -79,106 +169,74 @@
         }
 
         .film-grid img:hover {
-            transform: scale(1.04);
+            transform: scale(1.05);
             opacity: 0.9;
         }
 
-        /* Reviews section */
-        .review-item {
-            display: flex;
-            gap: 15px;
-            background: #1e2226;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            align-items: flex-start;
+        .section-title {
+            margin-top: 40px;
+            margin-bottom: 14px;
+            font-size: 1.3rem;
+            font-weight: 700;
         }
-
-        .review-item img {
-            width: 120px;
-            height: auto;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .review-content {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .review-content p {
-            margin: 0;
-        }
-
-        .review-content .film-title {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .review-content .rating {
-            font-weight: 500;
-        }
-
-        .review-content .date {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
-        .review-content .comment {
-            margin-top: 4px;
-        }
-
-        .profile-website {
-            color: #f2f2f2;
-            text-decoration: none;
-        }
-
-        .profile-website:visited {
-            color: #f2f2f2;
-        }
-
-        .profile-website:hover {
-            text-decoration: underline; /* optional for hover effect */
-        }
-
     </style>
 </head>
 
 <body>
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{#  #}">Your Films</a>
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+        <a href="{% url 'logout' %}">Sign Out</a>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button>🔍</button>
+        </div>
+    </div>
+</nav>
 
 <div class="container">
 
-    <!-- HEADER -->
+    <!-- Profile Header Section -->
     <div class="profile-header">
         {% if user_profile.avatar %}
-            <img src="{{ user_profile.avatar.url }}" alt="Profile picture">
+            <img src="{{ user_profile.avatar.url }}" alt="{{ user_profile.user.username }}'s avatar">
         {% else %}
             <img src="{% static 'images/default_avatar.jpg' %}" alt="Default avatar">
         {% endif %}
 
         <div class="profile-info">
             <h1>{{ user_profile.user.username }}</h1>
-
             <div class="stats">
-                <div><span>{{ total_films }}</span> films</div>
-                <div><span>{{ following_count }}</span> following</div>
-                <div><span>{{ followers_count }}</span> followers</div>
+                <div>
+                    <span>{{ total_films }}</span> films
+                </div>
+                <div>
+                    <span>{{ following_count }}</span> following
+                </div>
+                <div>
+                    <span>{{ followers_count }}</span> followers
+                </div>
             </div>
-            <p>📍 {{ user_profile.location }}</p>
-            {% if user_profile.website %}
-                <p>
-                    <a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer"
-                       class="profile-website">
-                        {{ user_profile.website }}
-                    </a>
-                </p>
-            {% endif %}
-
         </div>
+
+        <!-- Show Edit Button or Follow Button -->
+        {% if request.user.is_authenticated %}
+            {% if request.user == user_profile.user %}
+                <a href="{% url 'edit_profile' user_profile.user.username %}" class="edit-profile-btn">Edit Profile</a>
+            {% else %}
+                {% if is_following %}
+                    <a href="{% url 'toggle_follow' user_profile.user.username %}" class="follow-btn">Unfollow</a>
+                {% else %}
+                    <a href="{% url 'toggle_follow' user_profile.user.username %}" class="follow-btn">Follow</a>
+                {% endif %}
+            {% endif %}
+        {% endif %}
     </div>
 
-    <!-- FAVORITE FILMS -->
+    <!-- Favorite Films -->
     <div class="section-title">Favorite Films</div>
     <div class="film-grid">
         {% for film in favorite_films %}
@@ -186,11 +244,15 @@
                 <img src="{{ film.poster }}" alt="{{ film.title }}">
             </a>
         {% empty %}
-            <p>You have no favorites yet.</p>
+            {% if is_own_profile %}
+                <p>You have no favorites yet.</p>
+            {% else %}
+                <p>{{ user_profile.user.username|capfirst }} has no favorite films yet.</p>
+            {% endif %}
         {% endfor %}
     </div>
 
-    <!-- RECENT ACTIVITY -->
+    <!-- Recent Activity -->
     <div class="section-title">Recent Activity</div>
     <div class="film-grid">
         {% for film in recent_films %}
@@ -198,11 +260,15 @@
                 <img src="{{ film.poster }}" alt="{{ film.title }}">
             </a>
         {% empty %}
-            <p>No recent films.</p>
+            {% if is_own_profile %}
+                <p>You have no recent activity yet.</p>
+            {% else %}
+                <p>{{ user_profile.user.username|capfirst }} has no recent activity yet.</p>
+            {% endif %}
         {% endfor %}
     </div>
 
-    <!-- REVIEWS -->
+    <!-- Reviews -->
     <div class="section-title">Recent Reviews</div>
     <div>
         {% for review in recent_reviews %}
@@ -218,7 +284,11 @@
                 </div>
             </div>
         {% empty %}
-            <p>No reviews yet.</p>
+            {% if is_own_profile %}
+                <p>You have not reviewed any films yet.</p>
+            {% else %}
+                <p>{{ user_profile.user.username|capfirst }} has no reviews yet.</p>
+            {% endif %}
         {% endfor %}
     </div>
 

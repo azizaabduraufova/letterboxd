@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Films</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        :root {
+            --nav-height: 68px; /* update this if your navbar height changes */
+        }
+
+        /* Basic reset */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /*
+          Use the film backdrop as the full-page background so it sits behind
+          both the fixed navbar and the content container.
+        */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #ffffff;
+            background-image: url('{{ film.backdrop_url }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* keeps background fixed while scrolling */
+            padding-top: var(--nav-height); /* reserve space so fixed navbar doesn't cover content */
+            box-sizing: border-box;
+        }
+
+        /* dim the background for better text contrast (doesn't block clicks) */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* fixed navbar sits above the background */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            color: #fc5b9b;
+            z-index: 30; /* highest so links are clickable */
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #ff79b0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+
+        .films-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .film-card {
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .film-card img {
+            width: 100%;
+        }
+
+        .film-card h3 {
+            margin: 10px 0;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{#  #}">Your Films</a>
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+        <a href="{#  #}">Sign Out</a>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button>🔍</button>
+        </div>
+    </div>
+</nav>
+
+
+<h1 class="page-title">Your Films</h1>
+
+<div class="films-grid">
+    {% for film in films %}
+        <div class="film-card">
+            <a href="{% url 'film_detail' film.slug %}">
+                <img src="{{ film.poster }}" alt="{{ film.title }}">
+            </a>
+            <h3>{{ film.title }}</h3>
+        </div>
+    {% empty %}
+        <p style="grid-column:1/-1; text-align:center;">No films yet.</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

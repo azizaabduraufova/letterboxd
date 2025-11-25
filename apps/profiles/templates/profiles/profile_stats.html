@@ -1,0 +1,373 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ profile_user.username }} — Network</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        :root {
+            --nav-height: 68px;
+            --accent: #ff79b0;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #0f1315;
+            color: #e6eef1;
+        }
+
+        body {
+            padding-top: var(--nav-height);
+        }
+
+        /* Navbar (same style as film_detail.html) */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95);
+            color: #fc5b9b;
+            z-index: 30;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.14);
+        }
+
+        /* Page container */
+        .wrap {
+            max-width: 1100px;
+            margin: 36px auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(20, 24, 26, 0.6), rgba(14, 16, 18, 0.6));
+            border-radius: 8px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #bcd;
+            padding: 8px 12px;
+            font-weight: 700;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-color: #2bb673;
+        }
+
+        /* header row */
+        .list-head {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 6px;
+            color: #9aa3ab;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 6px;
+        }
+
+        .col-name {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .col-watched {
+            width: 420px;
+            text-align: right;
+        }
+
+        /* user rows */
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 6px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .user-row + .user-row {
+            border-top: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #222;
+            display: inline-block;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .username {
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: #9aa3ab;
+        }
+
+        .watched {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .watched .thumb {
+            width: 52px;
+            height: 72px;
+            border-radius: 6px;
+            overflow: hidden;
+            display: inline-block;
+            background: #222;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .watched .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* if no watched films, show placeholder */
+        .no-watched {
+            color: #9aa3ab;
+            font-size: 0.9rem;
+        }
+
+        /* small screens: stack watched under name */
+        @media (max-width: 820px) {
+            .col-watched {
+                width: auto;
+                text-align: left;
+            }
+
+            .user-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .watched {
+                margin-left: 0;
+                flex-wrap: wrap;
+            }
+
+            .wrap {
+                margin: 18px;
+            }
+
+            nav {
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+    </div>
+</nav>
+
+<div class="wrap">
+    <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; font-size:1.25rem;">{{ profile_user.username }} — Network</h2>
+            <div style="color:#9aa3ab; font-size:0.9rem;">Showing only Following and Followers</div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Network tabs" style="margin-top:12px;">
+            <button class="tab-btn active" data-target="following" role="tab" aria-selected="true">Following
+                <span style="color:#9aa3ab; font-weight:600; margin-left:8px;">({{ following_users|length }})</span>
+            </button>
+            <button class="tab-btn" data-target="followers" role="tab" aria-selected="false">Followers
+                <span style="color:#9aa3ab; font-weight:600; margin-left:8px;">({{ follower_users|length }})</span>
+            </button>
+        </div>
+
+        <!-- Following list -->
+        <div id="following" class="list-panel" role="tabpanel">
+            <div class="list-head">
+                <div class="col-name">NAME</div>
+                <div class="col-watched">WATCHED</div>
+            </div>
+
+            <div class="user-list">
+                {% for user in following_users %}
+                    <div class="user-row">
+                        <div class="col-name">
+                            <div class="avatar">
+                                {% if user.avatar_url %}
+                                    <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar">
+                                {% else %}
+                                    <img src="{% static 'images/default_avatar.jpg' %}" alt="default avatar">
+                                {% endif %}
+                            </div>
+                            <div class="user-meta">
+                                <a class="username" href="{% url 'profile' user.username %}">{{ user.username }}</a>
+                                <div class="stats">{{ user.followers_count|default:0 }} followers, following {{ user.following_count|default:0 }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-watched">
+                            <div class="watched">
+                                {% if user.watched_films %}
+                                    {% for entry in user.watched_films|slice:":6" %}
+                                        <a class="thumb" href="{% url 'film_detail' entry.film.slug %}">
+                                            <img src="{{ entry.film.poster }}" alt="{{ entry.film.title }}">
+                                        </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="no-watched">No watched films</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color:#9aa3ab;">Not following anyone yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Followers list -->
+        <div id="followers" class="list-panel" role="tabpanel" style="display:none;">
+            <div class="list-head">
+                <div class="col-name">NAME</div>
+                <div class="col-watched">WATCHED</div>
+            </div>
+
+            <div class="user-list">
+                {% for user in follower_users %}
+                    <div class="user-row">
+                        <div class="col-name">
+                            <div class="avatar">
+                                {% if user.avatar_url %}
+                                    <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar">
+                                {% else %}
+                                    <img src="{% static 'images/default_avatar.jpg' %}" alt="default avatar">
+                                {% endif %}
+                            </div>
+                            <div class="user-meta">
+                                <a class="username" href="{% url 'profile' user.username %}">{{ user.username }}</a>
+                                <div class="stats">{{ user.followers_count|default:0 }} followers, following {{ user.following_count|default:0 }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-watched">
+                            <div class="watched">
+                                {% if user.watched_films %}
+                                    {% for entry in user.watched_films|slice:":6" %}
+                                        <a class="thumb" href="{% url 'film_detail' entry.film.slug %}">
+                                            <img src="{{ entry.film.poster }}" alt="{{ entry.film.title }}">
+                                        </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="no-watched">No watched films</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color:#9aa3ab;">No followers yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+
+            const target = btn.getAttribute('data-target');
+            document.querySelectorAll('.list-panel').forEach(panel => panel.style.display = (panel.id === target) ? '' : 'none');
+        });
+    });
+</script>
+</body>
+</html>

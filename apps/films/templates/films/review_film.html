@@ -1,0 +1,394 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Review {{ film.title }}</title>
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <style>
+        :root {
+            --nav-height: 68px;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #ffffff;
+            background-image: url('{{ film.backdrop_url }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding-top: var(--nav-height);
+            box-sizing: border-box;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(18, 18, 18, 0.95);
+            color: #fc5b9b;
+            z-index: 30;
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-left {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #ff79b0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-right a {
+            color: #fc5b9b;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
+        }
+
+        /* Increased container width + padding per request */
+        .container {
+            max-width: 1200px; /* increased from 1000 */
+            margin: 40px auto 60px;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 10px;
+            padding: 40px; /* increased from 30 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 20;
+            color: #eaeaea;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            background: #222;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            color: #eee;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        button {
+            background: #fc5b9b;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #ff89b9;
+        }
+
+        /* Stars UI */
+        .rating {
+            margin: 10px 0 18px;
+        }
+
+        .stars {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .stars span {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #555;
+            transition: transform 0.08s ease, color 0.08s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        .stars span.active {
+            color: gold;
+            transform: translateY(-3px);
+        }
+
+        .stars span.hover {
+            color: #ffda6b;
+            transform: translateY(-2px);
+        }
+
+        /* Visually hide the original rating form control but keep it available to screen readers */
+        .original-rating {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+        }
+
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0,0,0,0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        @media(max-width: 900px) {
+            nav { padding: 0 16px; }
+            .container { margin: 24px 16px; padding: 28px; }
+            .stars span { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-overlay"></div>
+
+<nav>
+    <div class="nav-left">Letterboxd</div>
+    <div class="nav-right">
+        <a href="{% url 'profile_films' request.user.username %}">Your Films</a>
+        <a href="{% url 'profile' request.user.username %}">Profile</a>
+        <a href="#">Sign Out</a>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button>🔍</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Write a Review for {{ film.title }}</h1>
+
+    <form method="POST" class="space-y-4" id="review-form">
+        {% csrf_token %}
+
+        <div>
+            <label for="rating-stars">Rating (1–5)</label>
+
+            <!-- Keep original field but visually hide it; the script will sync with it.
+                 Django usually renders the rating field with id="id_rating" or name="rating". -->
+            <div class="original-rating" aria-hidden="false">
+                {{ form.rating }}
+            </div>
+
+            <!-- Accessible star control -->
+            <div id="rating-stars" class="rating" role="radiogroup" aria-label="Rating">
+                <div class="stars" id="review-stars">
+                    <span role="radio" aria-checked="false" tabindex="0" data-value="1" aria-label="1 star">★</span>
+                    <span role="radio" aria-checked="false" tabindex="0" data-value="2" aria-label="2 stars">★</span>
+                    <span role="radio" aria-checked="false" tabindex="0" data-value="3" aria-label="3 stars">★</span>
+                    <span role="radio" aria-checked="false" tabindex="0" data-value="4" aria-label="4 stars">★</span>
+                    <span role="radio" aria-checked="false" tabindex="0" data-value="5" aria-label="5 stars">★</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.comment.id_for_label }}">Your Review</label>
+            {{ form.comment }}
+        </div>
+
+        <button type="submit">Submit Review</button>
+    </form>
+</div>
+
+<script>
+    (function () {
+        // Utility to find the underlying rating field (select/number/hidden/radios)
+        function findRatingField() {
+            // prefer select/number/hidden with name 'rating'
+            let el = document.querySelector('select[name="rating"], input[type="hidden"][name="rating"], input[type="number"][name="rating"], input[name="rating"][type="text"]');
+            if (el) return {type: 'single', field: el};
+            // radio buttons
+            const radios = document.querySelectorAll('input[type="radio"][name="rating"]');
+            if (radios && radios.length) return {type: 'radios', field: radios};
+            // fallback to id-based
+            el = document.getElementById('id_rating');
+            if (el) return {type: 'single', field: el};
+            return null;
+        }
+
+        function setUnderlyingValue(value) {
+            const r = ratingField;
+            if (!r) return;
+            if (r.type === 'single') {
+                try { r.field.value = value; } catch (e) { /* ignore */ }
+                // for select elements, also dispatch change event for any listeners
+                try {
+                    r.field.dispatchEvent(new Event('change', { bubbles: true }));
+                } catch (e) {}
+            } else if (r.type === 'radios') {
+                r.field.forEach(radio => {
+                    radio.checked = (String(radio.value) === String(value));
+                    // dispatch change on the one we checked
+                    if (radio.checked) {
+                        try { radio.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+                    }
+                });
+            }
+        }
+
+        // stars behaviour
+        const starsContainer = document.getElementById('review-stars');
+        if (!starsContainer) return;
+        const starEls = Array.from(starsContainer.querySelectorAll('span[data-value]'));
+        const ratingField = findRatingField();
+
+        function updateStarsUI(value) {
+            const v = parseInt(value || 0, 10);
+            starEls.forEach((s, i) => {
+                const idx = i + 1;
+                s.classList.toggle('active', idx <= v);
+                s.classList.remove('hover');
+                s.setAttribute('aria-checked', String(idx === v));
+            });
+        }
+
+        function handleSet(value) {
+            updateStarsUI(value);
+            setUnderlyingValue(value);
+        }
+
+        // initialize from underlying value if present
+        (function init() {
+            let initial = 0;
+            if (ratingField) {
+                if (ratingField.type === 'single') {
+                    initial = parseInt(ratingField.field.value) || 0;
+                } else if (ratingField.type === 'radios') {
+                    ratingField.field.forEach(radio => {
+                        if (radio.checked) initial = parseInt(radio.value) || 0;
+                    });
+                }
+            }
+            if (initial) updateStarsUI(initial);
+        })();
+
+        // click + hover events
+        starEls.forEach(star => {
+            const value = parseInt(star.dataset.value, 10);
+
+            star.addEventListener('click', () => {
+                handleSet(value);
+            });
+
+            star.addEventListener('mouseover', () => {
+                starEls.forEach((s, i) => {
+                    s.classList.toggle('hover', (i + 1) <= value);
+                });
+            });
+
+            star.addEventListener('mouseout', () => {
+                starEls.forEach(s => s.classList.remove('hover'));
+            });
+
+            // keyboard support on each star: Enter/Space to select, ArrowLeft/Right to move
+            star.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                    ev.preventDefault();
+                    handleSet(value);
+                    star.focus();
+                    return;
+                }
+                if (ev.key === 'ArrowLeft' || ev.key === 'Left') {
+                    ev.preventDefault();
+                    const prev = star.previousElementSibling;
+                    if (prev) { prev.focus(); }
+                    else { starEls[0].focus(); }
+                }
+                if (ev.key === 'ArrowRight' || ev.key === 'Right') {
+                    ev.preventDefault();
+                    const next = star.nextElementSibling;
+                    if (next) { next.focus(); }
+                    else { starEls[starEls.length - 1].focus(); }
+                }
+            });
+        });
+
+        // ensure rating is set before submit if user didn't click (optional: set to 0)
+        const form = document.getElementById('review-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                // if underlying rating field exists and is empty, try to set it from UI
+                const currentValue = (ratingField && ratingField.type === 'single') ? ratingField.field.value :
+                    (ratingField && ratingField.type === 'radios' ? Array.from(ratingField.field).find(r=>r.checked)?.value : null);
+
+                const uiValue = starEls.reduce((acc, s, i) => acc || (s.classList.contains('active') ? (i + 1) : 0), 0);
+
+                if ((!currentValue || String(currentValue) === '') && uiValue) {
+                    setUnderlyingValue(uiValue);
+                }
+                // optionally require a rating — uncomment to enforce:
+                // if (!uiValue) { e.preventDefault(); alert('Please select a rating.'); }
+            });
+        }
+    })();
+</script>
+
+</body>
+</html>
