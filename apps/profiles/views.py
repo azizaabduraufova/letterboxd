@@ -1,15 +1,15 @@
 import os
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
-from django.urls import reverse
-from .forms import CustomUserCreationForm, UserProfileForm
 from django.contrib import messages
-from .forms import SignInForm
-from .models import Profile, ProfileFilm, WatchedFilm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.http import HttpResponseForbidden
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+
+from .forms import CustomUserCreationForm, SignInForm, UserProfileForm
+from .models import Profile, ProfileFilm, WatchedFilm
 
 
 def profile(request, username):
