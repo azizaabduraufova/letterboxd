@@ -55,7 +55,13 @@ def films(request):
 def film_detail(request, slug):
     film = get_object_or_404(Film, slug=slug)
     reviews = film.reviews.order_by('-created_at')
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    if film.backdrop_path:
+        if film.backdrop_path.startswith('http'):
+            film.backdrop_url = film.backdrop_path
+        else:
+            film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    else:
+        film.backdrop_url = ""
     is_in_watchlist = request.user.is_authenticated and request.user.profile.watchlist.filter(id=film.id).exists()
     rating_range = range(1, 6)
     watched = (
@@ -110,11 +116,19 @@ def review_film(request, slug):
 def film_reviews(request, slug):
     film = get_object_or_404(Film, slug=slug)
     reviews = film.reviews.select_related('profile__user').order_by('-created_at')
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    if film.backdrop_path:
+        if film.backdrop_path.startswith('http'):
+            film.backdrop_url = film.backdrop_path
+        else:
+            film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    else:
+        film.backdrop_url = ""
+    is_in_watchlist = request.user.is_authenticated and request.user.profile.watchlist.filter(id=film.id).exists()
 
     context = {
         'film': film,
         'reviews': reviews,
+        'is_in_watchlist': is_in_watchlist,
 
     }
     return render(request, 'films/review_list.html', context)
@@ -122,7 +136,13 @@ def film_reviews(request, slug):
 @login_required
 def create_view(request, slug):
     film = get_object_or_404(Film, slug=slug)
-    film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    if film.backdrop_path:
+        if film.backdrop_path.startswith('http'):
+            film.backdrop_url = film.backdrop_path
+        else:
+            film.backdrop_url = f"https://image.tmdb.org/t/p/original{film.backdrop_path}"
+    else:
+        film.backdrop_url = ""
 
     # prevent duplicate reviews
     if Review.objects.filter(film=film, profile=request.user.profile).exists():

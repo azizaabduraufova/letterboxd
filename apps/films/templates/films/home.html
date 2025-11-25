@@ -19,9 +19,14 @@
     <nav>
         <div class="nav-left" style="color: #fc5b9b">Letterboxd</div>
         <div class="nav-right">
-            <a href="{#  #}" style="color: #fc5b9b">Your Films</a>
-            <a href="{% url 'profile' request.user.username %}" style="color: #fc5b9b">Profile</a>
-            <a href="{#  #}" style="color: #fc5b9b">Sign Out</a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile_films' request.user.username %}" style="color: #fc5b9b">Your Films</a>
+                <a href="{% url 'profile' request.user.username %}" style="color: #fc5b9b">Profile</a>
+                <a href="{% url 'logout' %}" style="color: #fc5b9b">Sign Out</a>
+            {% else %}
+                <a href="{% url 'sign_in' %}" style="color: #fc5b9b">Sign In</a>
+                <a href="{% url 'create_profile' %}" style="color: #fc5b9b">Create Account</a>
+            {% endif %}
 
             <div class="search-bar">
                 <input type="text" placeholder="Search...">

@@ -2,11 +2,11 @@ import os
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User
+from django.http import HttpResponseForbidden
+from django.urls import reverse
 from .forms import CustomUserCreationForm, UserProfileForm
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
 from .forms import SignInForm
-from django.shortcuts import render, get_object_or_404
 from .models import Profile, ProfileFilm, WatchedFilm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -34,7 +34,6 @@ def create_profile(request):
     return render(request, 'profiles/create_profile.html', {'form': form})
 
 
-@csrf_exempt
 def sign_in(request):
     form = SignInForm()
 
@@ -125,7 +124,7 @@ def profile_stats(request, username):
             'avatar_url': p.avatar.url if p.avatar else None,
             'followers_count': p.followers.count(),
             'following_count': p.following.count(),
-            'watched_films': p.watched_films.all()
+            'watched_films': WatchedFilm.objects.filter(profile=p).select_related('film')[:6]
         }
         for p in following_profiles
     ]
@@ -136,7 +135,7 @@ def profile_stats(request, username):
             'avatar_url': p.avatar.url if p.avatar else None,
             'followers_count': p.followers.count(),
             'following_count': p.following.count(),
-            'watched_films': p.watched_films.all()
+            'watched_films': WatchedFilm.objects.filter(profile=p).select_related('film')[:6]
         }
         for p in follower_profiles
     ]
