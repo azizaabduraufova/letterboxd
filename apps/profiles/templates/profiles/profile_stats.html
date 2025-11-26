@@ -8,23 +8,40 @@
     <link rel="stylesheet" href="{% static 'main.css' %}">
     <style>
         :root {
-            --nav-height: 68px;
-            --accent: #ff79b0;
+            --nav-height: 68px; /* update this if your navbar height changes */
         }
 
+        /* Basic reset */
         html, body {
             height: 100%;
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #0f1315;
-            color: #e6eef1;
         }
 
+        /*
+          Use the film backdrop as the full-page background so it sits behind
+          both the fixed navbar and the content container.
+        */
         body {
-            padding-top: var(--nav-height);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #ffffff;
+            background-color: #212526;
+            background-attachment: fixed; /* keeps background fixed while scrolling */
+            padding-top: var(--nav-height); /* reserve space so fixed navbar doesn't cover content */
+            box-sizing: border-box;
         }
 
-        /* Navbar (same style as film_detail.html) */
+        /* dim the background for better text contrast (doesn't block clicks) */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* fixed navbar sits above the background */
         nav {
             position: fixed;
             top: 0;
@@ -35,23 +52,23 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background: rgba(18, 18, 18, 0.95);
+            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
             color: #fc5b9b;
-            z-index: 30;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            z-index: 30; /* highest so links are clickable */
             box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .nav-left {
             font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--accent);
+            font-size: 1.6rem;
+            color: #ff79b0;
         }
 
         .nav-right {
             display: flex;
-            gap: 14px;
             align-items: center;
+            gap: 14px;
         }
 
         .nav-right a {
@@ -59,7 +76,21 @@
             text-decoration: none;
             padding: 6px 10px;
             border-radius: 6px;
-            background: rgba(0, 0, 0, 0.14);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-bar input {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #222;
+            color: #eee;
         }
 
         /* Page container */
@@ -241,13 +272,25 @@
 <body>
 
 <nav>
-    <div class="nav-left">Letterboxd</div>
+    <div class="nav-left">
+        <a href="{% url 'home' %}" style="color: #fc5b9b; text-decoration: none;">Letterboxd</a>
+    </div>
     <div class="nav-right">
         {% if request.user.is_authenticated %}
+            <a href="{% url 'profile_films' request.user.username %}">Your Films</a>
             <a href="{% url 'profile' request.user.username %}">Profile</a>
+            <a href="{% url 'logout' %}">Sign Out</a>
         {% else %}
             <a href="{% url 'sign_in' %}">Sign In</a>
+            <a href="{% url 'create_profile' %}">Create Account</a>
         {% endif %}
+
+        <div class="search-bar">
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
     </div>
 </nav>
 
@@ -280,14 +323,17 @@
                         <div class="col-name">
                             <div class="avatar">
                                 {% if user.avatar_url %}
-                                    <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar">
+                                    <a href="{% url 'profile' user.username %}">
+                                        <img src="{{ user.avatar_url }}" alt="{{ user.username }} avatar"></a>
                                 {% else %}
-                                    <img src="{% static 'images/default_avatar.jpg' %}" alt="default avatar">
+                                    <a href="{% url 'profile' user.username %}">
+                                        <img src="{% static 'images/default_avatar.jpg' %}" alt="default avatar"></a>
                                 {% endif %}
                             </div>
                             <div class="user-meta">
                                 <a class="username" href="{% url 'profile' user.username %}">{{ user.username }}</a>
-                                <div class="stats">{{ user.followers_count|default:0 }} followers, following {{ user.following_count|default:0 }}</div>
+                                <div class="stats">{{ user.followers_count|default:0 }} followers,
+                                    following {{ user.following_count|default:0 }}</div>
                             </div>
                         </div>
 
@@ -331,7 +377,8 @@
                             </div>
                             <div class="user-meta">
                                 <a class="username" href="{% url 'profile' user.username %}">{{ user.username }}</a>
-                                <div class="stats">{{ user.followers_count|default:0 }} followers, following {{ user.following_count|default:0 }}</div>
+                                <div class="stats">{{ user.followers_count|default:0 }} followers,
+                                    following {{ user.following_count|default:0 }}</div>
                             </div>
                         </div>
 

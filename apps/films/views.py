@@ -3,7 +3,7 @@ import os
 import requests
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-
+from django.db.models import Q
 from apps.films.models import Film, Actor, Director, Review
 from apps.profiles.models import WatchedFilm
 from .forms import ReviewForm
@@ -26,18 +26,18 @@ def home_guest(request):
 
 @login_required
 def home_authenticated(request):
-    popular_films = get_popular_films()
+    profile = request.user.profile
+    favorite_films = profile.favorite_films.all()[:8]
+
+    return render(request, "films/home.html", {
+        "favorite_films": favorite_films,
+    })
 
     # For now: Fake friends activity
     friends_films = [
         {"title": "The Social Network", "poster_url": "https://m.media-amazon.com/images/M/MV5BMjlkNTE5ZTUtNGEwNy00MGVhLThmZjMtZjU1NDE5Zjk1NDZkXkEyXkFqcGc@._V1_.jpg", "friend_username": "alex"},
         {"title": "Interstellar", "poster_url": "https://m.media-amazon.com/images/I/91obuWzA3XL._AC_UF894,1000_QL80_.jpg", "friend_username": "mila"},
     ]
-
-    return render(request, "films/home.html", {
-        "popular_films": popular_films,
-        "friends_films": friends_films,
-    })
 
 def films(request):
     TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -150,6 +150,12 @@ def create_view(request, slug):
             review.film = film
             review.profile = request.user.profile
             review.save()
+
+            WatchedFilm.objects.get_or_create(
+                profile=request.user.profile,
+                film=film,
+            )
+
             return redirect('film_reviews', slug=slug)
     else:
         form = ReviewForm()
@@ -158,3 +164,18 @@ def create_view(request, slug):
         'film': film,
         'form': form
     })
+
+def film_search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+
+    if query:
+        results = Film.objects.filter(
+            Q(title__icontains=query)
+        ).order_by('title')
+
+    return render(request, 'films/search_results.html', {
+        'query': query,
+        'results': results,
+    })
+

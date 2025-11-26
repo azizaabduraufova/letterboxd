@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Review</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fc5b79;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            background: #007BFF;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .cancel-btn {
+            display: inline-block;
+            background: #d9534f;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .cancel-btn:hover {
+            background: #c9302c;
+        }
+
+        /* --- Star rating styles (copied / simplified from write_review.html) --- */
+        .rating-block {
+            margin-bottom: 10px;
+        }
+
+        .stars {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .stars span {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #ccc;
+            transition: transform 0.08s ease, color 0.08s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        .stars span.active {
+            color: gold;
+            transform: translateY(-3px);
+        }
+
+        .stars span.hover {
+            color: #ffda6b;
+            transform: translateY(-2px);
+        }
+
+        /* Hide the original rating field visually but keep it in the DOM for Django */
+        .original-rating {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Review</h1>
+
+        <form method="POST" id="edit-review-form">
+            {% csrf_token %}
+
+            <!-- Rating with stars -->
+            <div class="rating-block">
+                <label for="edit-rating-stars">Your Rating</label>
+
+                <!-- Original rating field, hidden but still submitted -->
+                <div class="original-rating">
+                    {{ form.rating }}
+                </div>
+
+                <!-- Stars UI, same structure as in write_review.html -->
+                <div id="edit-rating-stars" class="rating" role="radiogroup" aria-label="Rating">
+                    <div class="stars" id="edit-review-stars">
+                        <span role="radio" aria-checked="false" tabindex="0" data-value="1" aria-label="1 star">★</span>
+                        <span role="radio" aria-checked="false" tabindex="0" data-value="2" aria-label="2 stars">★</span>
+                        <span role="radio" aria-checked="false" tabindex="0" data-value="3" aria-label="3 stars">★</span>
+                        <span role="radio" aria-checked="false" tabindex="0" data-value="4" aria-label="4 stars">★</span>
+                        <span role="radio" aria-checked="false" tabindex="0" data-value="5" aria-label="5 stars">★</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment field (render only comment, not rating again) -->
+            <div>
+                <label for="{{ form.comment.id_for_label }}">Your Comment</label>
+                {{ form.comment }}
+            </div>
+
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <a href="{% url 'review_detail' profile_user.user.username review.id %}" class="cancel-btn">Cancel</a>
+    </div>
+
+    <script>
+        (function () {
+            function findRatingField() {
+                let el = document.querySelector('select[name="rating"], input[type="hidden"][name="rating"], input[type="number"][name="rating"], input[name="rating"][type="text"]');
+                if (el) return {type: 'single', field: el};
+                const radios = document.querySelectorAll('input[type="radio"][name="rating"]');
+                if (radios && radios.length) return {type: 'radios', field: radios};
+                el = document.getElementById('id_rating');
+                if (el) return {type: 'single', field: el};
+                return null;
+            }
+
+            function setUnderlyingValue(ratingField, value) {
+                if (!ratingField) return;
+                if (ratingField.type === 'single') {
+                    ratingField.field.value = value;
+                    try {
+                        ratingField.field.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (e) {}
+                } else if (ratingField.type === 'radios') {
+                    ratingField.field.forEach(radio => {
+                        radio.checked = (String(radio.value) === String(value));
+                        if (radio.checked) {
+                            try { radio.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+                        }
+                    });
+                }
+            }
+
+            const starsContainer = document.getElementById('edit-review-stars');
+            if (!starsContainer) return;
+
+            const starEls = Array.from(starsContainer.querySelectorAll('span[data-value]'));
+            const ratingField = findRatingField();
+
+            function updateStarsUI(value) {
+                const v = parseInt(value || 0, 10);
+                starEls.forEach((s, i) => {
+                    const idx = i + 1;
+                    s.classList.toggle('active', idx <= v);
+                    s.classList.remove('hover');
+                    s.setAttribute('aria-checked', String(idx === v));
+                });
+            }
+
+            function handleSet(value) {
+                updateStarsUI(value);
+                setUnderlyingValue(ratingField, value);
+            }
+
+            // Initialize from existing rating value (for editing)
+            (function init() {
+                let initial = 0;
+                if (ratingField) {
+                    if (ratingField.type === 'single') {
+                        initial = parseInt(ratingField.field.value) || 0;
+                    } else if (ratingField.type === 'radios') {
+                        ratingField.field.forEach(radio => {
+                            if (radio.checked) initial = parseInt(radio.value) || 0;
+                        });
+                    }
+                }
+                if (initial) updateStarsUI(initial);
+            })();
+
+            starEls.forEach(star => {
+                const value = parseInt(star.dataset.value, 10);
+
+                star.addEventListener('click', () => {
+                    handleSet(value);
+                });
+
+                star.addEventListener('mouseover', () => {
+                    starEls.forEach((s, i) => {
+                        s.classList.toggle('hover', (i + 1) <= value);
+                    });
+                });
+
+                star.addEventListener('mouseout', () => {
+                    starEls.forEach(s => s.classList.remove('hover'));
+                });
+
+                star.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                        ev.preventDefault();
+                        handleSet(value);
+                        star.focus();
+                        return;
+                    }
+                    if (ev.key === 'ArrowLeft' || ev.key === 'Left') {
+                        ev.preventDefault();
+                        const prev = star.previousElementSibling;
+                        if (prev) { prev.focus(); }
+                        else { starEls[0].focus(); }
+                    }
+                    if (ev.key === 'ArrowRight' || ev.key === 'Right') {
+                        ev.preventDefault();
+                        const next = star.nextElementSibling;
+                        if (next) { next.focus(); }
+                        else { starEls[starEls.length - 1].focus(); }
+                    }
+                });
+            });
+
+            const form = document.getElementById('edit-review-form');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    const currentValue =
+                        (ratingField && ratingField.type === 'single')
+                            ? ratingField.field.value
+                            : (ratingField && ratingField.type === 'radios'
+                                ? Array.from(ratingField.field).find(r => r.checked)?.value
+                                : null);
+
+                    const uiValue = starEls.reduce(
+                        (acc, s, i) => acc || (s.classList.contains('active') ? (i + 1) : 0),
+                        0
+                    );
+
+                    if ((!currentValue || String(currentValue) === '') && uiValue) {
+                        setUnderlyingValue(ratingField, uiValue);
+                    }
+                    // Optionally enforce rating:
+                    // if (!uiValue) { e.preventDefault(); alert('Please select a rating.'); }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

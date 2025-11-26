@@ -10,5 +10,8 @@ urlpatterns = [
     path('profile/<str:username>/edit/', views.edit_profile, name='edit_profile'),
     path('profile/<str:username>/follow/', views.toggle_follow, name='toggle_follow'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/<str:username>/review/<int:review_id>/', views.review_detail, name='review_detail'),
+    path('profile/<str:username>/review/<int:review_id>/edit/', views.edit_review, name='edit_review'),
+    path('profile/<str:username>/review/<int:review_id>/delete/', views.delete_review, name='delete_review'),
 
 ]

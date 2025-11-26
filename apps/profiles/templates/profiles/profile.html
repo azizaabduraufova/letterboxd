@@ -155,6 +155,71 @@
             background: #555;
         }
 
+        /* Container for the list of reviews */
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between each review container */
+            margin-top: 20px;
+        }
+
+        /* Each review container: Horizontal layout */
+        .review-item {
+            display: flex;
+            background: #000000; /* Light background for contrast */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            align-items: center;
+        }
+
+        /* Poster image */
+        .review-item img {
+            width: 120px; /* Slightly larger horizontal poster */
+            height: 180px; /* Enforce consistent aspect ratio */
+            object-fit: cover;
+            flex-shrink: 0; /* Prevent shrinking of the poster */
+        }
+
+        /* Review details container */
+        .review-details {
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1; /* Take all available space horizontally */
+        }
+
+        /* Title (Clickable link) */
+        .review-details .film-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 0.5rem; /* Space below the title */
+            text-decoration: none;
+        }
+
+        .review-details .film-title:hover {
+            color: #a51b75;
+            text-decoration: underline;
+        }
+
+        /* Rating and date (smaller text) */
+        .review-details .rating,
+        .review-details .date {
+            font-size: 0.9rem;
+            color: #ffffff;
+            margin: 5px 0; /* Small spacing between them */
+        }
+
+        /* Comment styling */
+        .review-details .comment {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+            color: #ffffff;
+        }
+
         .film-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -173,18 +238,31 @@
             opacity: 0.9;
         }
 
+
         .section-title {
             margin-top: 40px;
             margin-bottom: 14px;
             font-size: 1.3rem;
             font-weight: 700;
         }
+
+        a {
+            color: white;
+            text-decoration: none;
+        }
+
+        a :hover {
+            color: #fc5b9b;
+            text-decoration: none;
+        }
     </style>
 </head>
 
 <body>
 <nav>
-    <div class="nav-left">Letterboxd</div>
+    <div class="nav-left">
+        <a href="{% url 'home' %}" style="color: #fc5b9b; text-decoration: none;">Letterboxd</a>
+    </div>
     <div class="nav-right">
         {% if request.user.is_authenticated %}
             <a href="{% url 'profile_films' request.user.username %}">Your Films</a>
@@ -196,8 +274,10 @@
         {% endif %}
 
         <div class="search-bar">
-            <input type="text" placeholder="Search...">
-            <button>🔍</button>
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
         </div>
     </div>
 </nav>
@@ -216,15 +296,42 @@
             <h1>{{ user_profile.user.username }}</h1>
             <div class="stats">
                 <div>
-                    <span>{{ total_films }}</span> films
+                    <a href="{% url 'profile_films' user_profile.user.username %}">
+                        <span>{{ total_films }}</span> films
+                    </a>
                 </div>
                 <div>
-                    <span>{{ following_count }}</span> following
+                    <a href="{% url 'profile_stats' user_profile.user.username %}">
+                        <span>{{ following_count }}</span> following
+                    </a>
                 </div>
                 <div>
-                    <span>{{ followers_count }}</span> followers
+                    <a href="{% url 'profile_stats' user_profile.user.username %}">
+                        <span>{{ followers_count }}</span> followers
+                    </a>
                 </div>
             </div>
+            <br>
+            {% if user_profile.location or user_profile.website or user_profile.bio %}
+                <div class="additional-info">
+                    {% if user_profile.location %}
+                        <div class="location">
+                            📍 {{ user_profile.location }}
+                        </div>
+                    {% endif %}
+                    {% if user_profile.website %}
+                        <div class="website">
+                            🌐 <a href="{{ user_profile.website }}" target="_blank">{{ user_profile.website }}</a>
+                        </div>
+                    {% endif %}
+                    <br>
+                    {% if user_profile.bio %}
+                        <div class="bio">
+                            {{ user_profile.bio }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- Show Edit Button or Follow Button -->
@@ -275,11 +382,11 @@
 
     <!-- Reviews -->
     <div class="section-title">Recent Reviews</div>
-    <div>
+    <div class="review-list">
         {% for review in recent_reviews %}
-            <div class="review-item">
+            <a class="review-item" href="{% url 'review_detail' user_profile.user.username review.id %}">
                 <img src="{{ review.film.poster }}" alt="{{ review.film.title }}">
-                <div class="review-content">
+                <div class="review-details">
                     <p class="film-title">{{ review.film.title }}</p>
                     <p class="rating">Rating: {{ review.rating }}/5</p>
                     <p class="date">{{ review.created_at|date:"M d, Y" }}</p>
@@ -287,7 +394,7 @@
                         <p class="comment">{{ review.comment }}</p>
                     {% endif %}
                 </div>
-            </div>
+            </a>
         {% empty %}
             {% if is_own_profile %}
                 <p>You have not reviewed any films yet.</p>

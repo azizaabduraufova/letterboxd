@@ -31,6 +31,7 @@ services:
       - POSTGRES_PASSWORD=123
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      - DJANGO_SETTINGS_MODULE=config.settings
 
 volumes:
   db_data:

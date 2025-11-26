@@ -27,9 +27,11 @@
             <a href="{% url 'create_profile' %}" style="color: #fc5b9b">Create account</a>
             <a href="{% url 'films' %}" style="color: #fc5b9b">Films</a>
             <div class="search-bar">
-                <input type="text" placeholder="Search...">
-                <button>🔍</button>
-            </div>
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
         </div>
     </nav>
 

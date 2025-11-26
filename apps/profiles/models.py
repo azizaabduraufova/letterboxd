@@ -27,10 +27,10 @@ class Profile(models.Model):
         """Mutual following"""
         return self.following.filter(followers=self)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.favorite_films.count() > 4:
-            raise ValueError("Cannot have more than 4 favorite films")
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     if self.favorite_films.count() > 4:
+    #         raise ValueError("Cannot have more than 4 favorite films")
 
     def __str__(self):
         return self.user.username

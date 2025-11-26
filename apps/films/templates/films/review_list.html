@@ -232,7 +232,7 @@
             border-radius: 8px;
             margin-bottom: 14px;
             color: #eaeaea;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
         }
 
         .review-header {
@@ -278,6 +278,7 @@
             text-decoration: none;
             display: inline-block;
         }
+
         .profile-link:hover {
             color: #fc5b9b;
             text-decoration: underline;
@@ -305,7 +306,9 @@
 <div class="bg-overlay" aria-hidden="true"></div>
 
 <nav>
-    <div class="nav-left">Letterboxd</div>
+    <div class="nav-left">
+        <a href="{% url 'home' %}" style="color: #fc5b9b; text-decoration: none;">Letterboxd</a>
+    </div>
     <div class="nav-right">
         {% if request.user.is_authenticated %}
             <a href="{% url 'profile_films' request.user.username %}">Your Films</a>
@@ -317,8 +320,10 @@
         {% endif %}
 
         <div class="search-bar">
-            <input type="text" placeholder="Search...">
-            <button>🔍</button>
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
         </div>
     </div>
 </nav>
@@ -355,17 +360,21 @@
                     {% for review in reviews %}
                         <div class="review-card">
                             <div class="review-header">
-                                <a href="{% url 'profile' review.profile.user.username %}" class="profile-link" title="View {{ review.profile.user.username }}'s profile">
+                                <a href="{% url 'profile' review.profile.user.username %}" class="profile-link"
+                                   title="View {{ review.profile.user.username }}'s profile">
                                     {% if review.profile.avatar %}
-                                        <img src="{{ review.profile.avatar.url }}" class="avatar" alt="{{ review.profile.user.username }}">
+                                        <img src="{{ review.profile.avatar.url }}" class="avatar"
+                                             alt="{{ review.profile.user.username }}">
                                     {% else %}
-                                        <img src="{% static 'images/default_avatar.jpg' %}" class="avatar" alt="Default avatar">
+                                        <img src="{% static 'images/default_avatar.jpg' %}" class="avatar"
+                                             alt="Default avatar">
                                     {% endif %}
                                 </a>
 
                                 <div class="review-meta">
                                     <strong style="display:block;">
-                                        <a href="{% url 'profile' review.profile.user.username %}" class="profile-link">{{ review.profile.user.username }}</a>
+                                        <a href="{% url 'profile' review.profile.user.username %}"
+                                           class="profile-link">{{ review.profile.user.username }}</a>
                                     </strong>
                                     <div class="review-stars">
                                         {% for i in "12345"|make_list %}

@@ -4,7 +4,7 @@ from apps.films import views
 
 urlpatterns = [
     path('', views.home_guest, name='home_guest'),
-    path('home/', views.home_authenticated, name='home_authenticated'),
+    path('home/', views.home_authenticated, name='home'),
     path('films/', views.films, name='films'),
     path('film/<slug:slug>/', views.film_detail, name='film_detail'),
     path('actor/<slug:slug>/', views.actor_detail, name='actor_detail'),
@@ -13,5 +13,8 @@ urlpatterns = [
     path('film/<slug:slug>/watchlist/toggle/', views.toggle_watchlist, name='toggle_watchlist'),
     path('film/<slug:slug>/review/', views.create_view, name='review_film'),
     path("film/<slug:slug>/reviews/", views.film_reviews, name="film_reviews"),
+    path('search/', views.film_search, name='film_search'),
 
 ]
+
+

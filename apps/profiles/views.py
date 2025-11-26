@@ -7,17 +7,17 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-
-from .forms import CustomUserCreationForm, SignInForm, UserProfileForm
+from apps.films.models import Review
+from .forms import CustomUserCreationForm, SignInForm, UserProfileForm, ReviewForm
 from .models import Profile, ProfileFilm, WatchedFilm
 
 
-def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    context = {
-        'profile_user': user,
-    }
-    return render(request, 'profiles/profile.html', context)
+# def profile(request, username):
+#     user = get_object_or_404(User, username=username)
+#     context = {
+#         'profile_user': user,
+#     }
+#     return render(request, 'profiles/profile.html', context)
 
 
 def create_profile(request):
@@ -27,7 +27,7 @@ def create_profile(request):
             user = form.save()
             Profile.objects.create(user=user)
             messages.success(request, "Account created successfully!")
-            return redirect('home_authenticated')
+            return redirect('home')
     else:
         form = CustomUserCreationForm()
 
@@ -46,7 +46,7 @@ def sign_in(request):
             user = authenticate(request, username=username, password=password)
             if user:
                 login(request, user)
-                return redirect("home_authenticated")
+                return redirect("home")
             else:
                 messages.error(request, "Invalid username or password.")
 
@@ -70,7 +70,7 @@ def profile_view(request, username):
     favorite_films = user_profile.favorite_films.all()[:4]
 
     # Total films watched (assuming you track it via reviews or watchlist)
-    total_films = user_profile.watched_films.count() + favorite_films.count()
+    total_films = user_profile.watched_films.count()
 
     # Followers / following counts
     following_count = user_profile.following.count()
@@ -109,6 +109,7 @@ def profile_films(request, username):
     return render(request, "profiles/profile_films.html", {
         "films": films
     })
+
 
 def profile_stats(request, username):
     user_profile = get_object_or_404(Profile, user__username=username)
@@ -167,6 +168,7 @@ def edit_profile(request, username):
         'user_profile': user_profile,
     })
 
+
 @login_required
 def toggle_follow(request, username):
     target_profile = get_object_or_404(Profile, user__username=username)
@@ -184,6 +186,7 @@ def toggle_follow(request, username):
 
     return redirect(reverse('profile', args=[username]))
 
+
 @login_required
 def logout_view(request):
     if request.method == "POST":
@@ -191,3 +194,69 @@ def logout_view(request):
         logout(request)
         return redirect("home_guest")  # Redirect to confirmation page
     return render(request, "profiles/logout_confirm.html")
+
+
+def review_detail(request, username, review_id):
+    # Fetch the Profile using the username
+    profile_user = get_object_or_404(Profile, user__username=username)
+
+    # Fetch the Review and ensure it belongs to the correct Profile
+    review = get_object_or_404(Review, id=review_id, profile=profile_user)
+
+    # Pass both the review and profile_user to the template
+    return render(request, 'profiles/review_detail.html', {
+        'review': review,
+        'profile_user': profile_user,
+    })
+
+
+@login_required
+def edit_review(request, username, review_id):
+    # Fetch the Profile using the username
+    profile_user = get_object_or_404(Profile, user__username=username)
+
+    # Ensure the user can only edit their own reviews
+    if request.user != profile_user.user:
+        messages.error(request, "You don't have permission to edit this review.")
+        return redirect('review_detail', username=username, review_id=review_id)
+
+    # Fetch the Review object
+    review = get_object_or_404(Review, id=review_id, profile=profile_user)
+
+    # Handle the form submission
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            # messages.success(request, "Your review has been updated.")
+            return redirect('review_detail', username=username, review_id=review.id)
+    else:
+        form = ReviewForm(instance=review)
+
+    return render(request, 'profiles/edit_review.html', {
+        'form': form,
+        'review': review,
+        'profile_user': profile_user,
+    })
+
+
+@login_required
+def delete_review(request, username, review_id):
+    profile_user = get_object_or_404(Profile, user__username=username)
+    review = get_object_or_404(Review, id=review_id, profile=profile_user)
+
+    # Debugging Request Type
+    print(f"Request Method: {request.method}")
+
+    if request.method == "POST":
+        print("Deleting review...")
+        review.delete()
+        # messages.success(request, "Your review has been deleted.")
+        return redirect('profile', username=request.user.username)
+
+    # For a GET request, render the confirmation page
+    print("Rendering confirmation page...")
+    return render(request, 'profiles/delete_review.html', {
+        'review': review,
+        'profile_user': profile_user,
+    })

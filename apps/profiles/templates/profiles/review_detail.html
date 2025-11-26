@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .poster-container {
+            display: flex;
+            justify-content: center;
+            background: #000;
+            padding: 20px;
+        }
+
+        .poster-container img {
+            width: 600px;
+            height: auto;
+        {#border-radius: 10px;#}{#border: 2px solid #007BFF;#}
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #222;
+        }
+
+        .content .rating {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 0.8rem;
+        }
+
+        .content .date {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 1.2rem;
+        }
+
+        .content .comment {
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            color: #333;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background 0.3s;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Edit button color */
+        .btn-edit {
+            background: #d900ff;
+        }
+
+        .btn-edit:hover {
+            background: #b000d0;
+        }
+
+        /* Delete button color */
+        .btn-danger {
+            background: #d9534f;
+        }
+
+        .btn-danger:hover {
+            background: #c9302c;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Film poster -->
+    <div class="poster-container">
+        <img src="{{ review.film.backdrop_path }}" alt="{{ review.film.title }}">
+    </div>
+    <div class="content">
+        <!-- Film and review details -->
+        <h1>{{ review.film.title }}</h1>
+        <p class="rating">Rating: {{ review.rating }} / 5</p>
+        <p class="date">Reviewed on {{ review.created_at|date:"M d, Y" }}</p>
+        {% if review.comment %}
+            <p class="comment">{{ review.comment }}</p>
+        {% endif %}
+
+        <!-- Actions (edit/delete) -->
+        {% if review.profile.user.username == request.user.username %}
+            <div class="actions">
+                <a class="btn btn-edit" href="{% url 'edit_review' profile_user.user.username review.id %}">Edit</a>
+                <form action="{% url 'delete_review' profile_user.user.username review.id %}" method="GET"
+                      style="display: inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

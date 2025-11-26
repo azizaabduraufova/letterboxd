@@ -3,8 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Your Films</title>
-{#    <link rel="stylesheet" href="{% static 'main.css' %}">#}
+    <title>Search Results{% if query %} – {{ query }}{% endif %}</title>
     <style>
         :root {
             --nav-height: 68px;
@@ -43,9 +42,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background: rgba(18, 18, 18, 0.95); /* mostly opaque so it's readable over busy images */
+            background: rgba(18, 18, 18, 0.95);
             color: #fc5b9b;
-            z-index: 30; /* highest so links are clickable */
+            z-index: 30;
             box-sizing: border-box;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
@@ -84,18 +83,36 @@
             color: #eee;
         }
 
+        .search-bar button {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            background: #fc5b9b;
+            color: #fff;
+            cursor: pointer;
+        }
+
         .page-title {
             text-align: center;
             font-size: 2rem;
-            margin: 12px 0 8px; /* was 24px 0 16px; smaller top/bottom margin */
+            margin: 12px 0 8px;
             z-index: 2;
             position: relative;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
         }
 
+        .subtitle {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #d0d0d0;
+            z-index: 2;
+            position: relative;
+        }
+
         .films-grid {
             max-width: 1200px;
-            margin: 0 auto 24px; /* remove extra space above, only some bottom margin */
+            margin: 0 auto 24px;
             padding: 0 20px 24px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -125,7 +142,7 @@
 
         .film-card img {
             width: 100%;
-            max-height: 220px; /* smaller poster */
+            max-height: 220px;
             object-fit: cover;
             border-radius: 6px;
         }
@@ -135,11 +152,6 @@
             font-size: 0.95rem;
             font-weight: 500;
             color: #f5f5f5;
-        }
-
-        .film-card h3 span {
-            color: #bbbbbb;
-            font-size: 0.85rem;
         }
 
         @media (max-width: 600px) {
@@ -160,7 +172,6 @@
             .film-card img {
                 max-height: 200px;
             }
-
         }
     </style>
 </head>
@@ -183,26 +194,39 @@
 
         <div class="search-bar">
             <form method="get" action="{% url 'film_search' %}">
-                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <input type="text" name="q" placeholder="Search..." value="{{ query }}">
                 <button type="submit">🔍</button>
             </form>
         </div>
     </div>
 </nav>
 
-<h1 class="page-title">Your Films</h1>
+<h1 class="page-title">Search Results</h1>
+<p class="subtitle">
+    {% if query %}
+        Showing results for "<strong>{{ query }}</strong>"
+    {% else %}
+        Type something in the search bar to find films.
+    {% endif %}
+</p>
 
 <div class="films-grid">
-    {% for film in films %}
-        <div class="film-card">
-            <a href="{% url 'film_detail' film.slug %}">
-                <img src="{{ film.poster }}" alt="{{ film.title }}">
-            </a>
-            <h3>{{ film.title }}</h3>
-        </div>
-    {% empty %}
-        <p style="grid-column: 1 / -1; text-align: center;">No films yet.</p>
-    {% endfor %}
+    {% if results %}
+        {% for film in results %}
+            <div class="film-card">
+                <a href="{% url 'film_detail' film.slug %}">
+                    <img src="{{ film.poster }}" alt="{{ film.title }}">
+                </a>
+                <h3>{{ film.title }}</h3>
+            </div>
+        {% endfor %}
+    {% else %}
+        {% if query %}
+            <p style="grid-column: 1 / -1; text-align: center;">No films found.</p>
+        {% else %}
+            <p style="grid-column: 1 / -1; text-align: center;">Start by searching for a film.</p>
+        {% endif %}
+    {% endif %}
 </div>
 
 </body>

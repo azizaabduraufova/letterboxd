@@ -142,3 +142,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redirect users to the guest home page after logout
 LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = 'sign_in'

@@ -11,64 +11,67 @@
 
 <body style="margin: 0;
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+    background-image: url('{% static 'images/background.jpg' %}');
     min-height: 100vh;
     color: #ffffff;">
 
-    <!-- NAVBAR -->
-    <nav>
-        <div class="nav-left" style="color: #fc5b9b">Letterboxd</div>
-        <div class="nav-right">
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile_films' request.user.username %}" style="color: #fc5b9b">Your Films</a>
-                <a href="{% url 'profile' request.user.username %}" style="color: #fc5b9b">Profile</a>
-                <a href="{% url 'logout' %}" style="color: #fc5b9b">Sign Out</a>
-            {% else %}
-                <a href="{% url 'sign_in' %}" style="color: #fc5b9b">Sign In</a>
-                <a href="{% url 'create_profile' %}" style="color: #fc5b9b">Create Account</a>
-            {% endif %}
-
-            <div class="search-bar">
-                <input type="text" placeholder="Search...">
-                <button>🔍</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- FEED CONTAINER -->
-    <div style="padding: 40px;">
-        <h1 style="font-weight: 800; margin-bottom: 20px;">
-            Welcome back, {{ user.username }}.
-        </h1>
-
-        <!-- Popular Films This Week -->
-        <section style="margin-top: 40px;">
-            <h2 style="font-weight: 600; margin-bottom: 10px;">Popular films this week</h2>
-            <div style="display: flex; gap: 20px;">
-                {% for film in popular_films %}
-                    <div style="width: 150px; text-align: center;">
-                        <img src="{{ film.poster_url }}" alt="{{ film.title }}" style="width: 100%; border-radius: 8px;">
-                        <p style="margin-top: 8px;">{{ film.title }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <!-- New Films From Friends -->
-        <section style="margin-top: 40px;">
-            <h2 style="font-weight: 600; margin-bottom: 10px;">New from your friends</h2>
-            <div style="display: flex; gap: 20px;">
-                {% for film in friends_films %}
-                    <div style="width: 150px; text-align: center;">
-                        <img src="{{ film.poster_url }}" alt="{{ film.title }}" style="width: 100%; border-radius: 8px;">
-                        <p style="margin-top: 8px;">{{ film.title }}</p>
-                        <span style="opacity: 0.7; font-size: 0.9rem;">by {{ film.friend_username }}</span>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
-
+<!-- NAVBAR -->
+<nav>
+    <div class="nav-left">
+        <a href="{% url 'home' %}" style="color: #fc5b9b; text-decoration: none;">Letterboxd</a>
     </div>
+    <div class="nav-right">
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'profile_films' request.user.username %}" style="color: #fc5b9b">Your Films</a>
+            <a href="{% url 'profile' request.user.username %}" style="color: #fc5b9b">Profile</a>
+            <a href="{% url 'logout' %}" style="color: #fc5b9b">Sign Out</a>
+        {% else %}
+            <a href="{% url 'sign_in' %}" style="color: #fc5b9b">Sign In</a>
+            <a href="{% url 'create_profile' %}" style="color: #fc5b9b">Create Account</a>
+        {% endif %}
+
+        <div class="search-bar">
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- FEED CONTAINER -->
+{% if favorite_films %}
+<section style="margin-top: 40px;">
+    <h2 style="font-weight: 600; margin-bottom: 10px;">Your favorites</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        {% for film in favorite_films %}
+            <div style="width: 150px; text-align: center;">
+                <a href="{% url 'film_detail' film.slug %}" style="text-decoration: none; color: inherit;">
+                    <img src="{{ film.poster }}" alt="{{ film.title }}"
+                         style="width: 100%; border-radius: 8px;">
+                    <p style="margin-top: 8px;">{{ film.title }}</p>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+    <!-- New Films From Friends -->
+{#    <section style="margin-top: 40px;">#}
+{#        <h2 style="font-weight: 600; margin-bottom: 10px;">New from your friends</h2>#}
+{#        <div style="display: flex; gap: 20px;">#}
+{#            {% for film in friends_films %}#}
+{#                <div style="width: 150px; text-align: center;">#}
+{#                    <img src="{{ film.poster_url }}" alt="{{ film.title }}" style="width: 100%; border-radius: 8px;">#}
+{#                    <p style="margin-top: 8px;">{{ film.title }}</p>#}
+{#                    <span style="opacity: 0.7; font-size: 0.9rem;">by {{ film.friend_username }}</span>#}
+{#                </div>#}
+{#            {% endfor %}#}
+{#        </div>#}
+{#    </section>#}
+
+</div>
 
 </body>
 </html>

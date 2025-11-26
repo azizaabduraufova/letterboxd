@@ -97,7 +97,7 @@
             background-color: rgba(30, 30, 30, 0.95);
             border-radius: 10px;
             padding: 40px; /* increased from 30 */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             position: relative;
             z-index: 20;
             color: #eaeaea;
@@ -191,15 +191,24 @@
             padding: 0 !important;
             margin: -1px !important;
             overflow: hidden !important;
-            clip: rect(0,0,0,0) !important;
+            clip: rect(0, 0, 0, 0) !important;
             white-space: nowrap !important;
             border: 0 !important;
         }
 
-        @media(max-width: 900px) {
-            nav { padding: 0 16px; }
-            .container { margin: 24px 16px; padding: 28px; }
-            .stars span { font-size: 1.6rem; }
+        @media (max-width: 900px) {
+            nav {
+                padding: 0 16px;
+            }
+
+            .container {
+                margin: 24px 16px;
+                padding: 28px;
+            }
+
+            .stars span {
+                font-size: 1.6rem;
+            }
         }
     </style>
 </head>
@@ -208,7 +217,9 @@
 <div class="bg-overlay"></div>
 
 <nav>
-    <div class="nav-left">Letterboxd</div>
+    <div class="nav-left">
+        <a href="{% url 'home' %}" style="color: #fc5b9b; text-decoration: none;">Letterboxd</a>
+    </div>
     <div class="nav-right">
         {% if request.user.is_authenticated %}
             <a href="{% url 'profile_films' request.user.username %}">Your Films</a>
@@ -220,8 +231,10 @@
         {% endif %}
 
         <div class="search-bar">
-            <input type="text" placeholder="Search...">
-            <button>🔍</button>
+            <form method="get" action="{% url 'film_search' %}">
+                <input type="text" name="q" placeholder="Search films..." value="{{ request.GET.q }}">
+                <button type="submit">🔍</button>
+            </form>
         </div>
     </div>
 </nav>
@@ -282,17 +295,24 @@
             const r = ratingField;
             if (!r) return;
             if (r.type === 'single') {
-                try { r.field.value = value; } catch (e) { /* ignore */ }
+                try {
+                    r.field.value = value;
+                } catch (e) { /* ignore */
+                }
                 // for select elements, also dispatch change event for any listeners
                 try {
-                    r.field.dispatchEvent(new Event('change', { bubbles: true }));
-                } catch (e) {}
+                    r.field.dispatchEvent(new Event('change', {bubbles: true}));
+                } catch (e) {
+                }
             } else if (r.type === 'radios') {
                 r.field.forEach(radio => {
                     radio.checked = (String(radio.value) === String(value));
                     // dispatch change on the one we checked
                     if (radio.checked) {
-                        try { radio.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+                        try {
+                            radio.dispatchEvent(new Event('change', {bubbles: true}));
+                        } catch (e) {
+                        }
                     }
                 });
             }
@@ -363,14 +383,20 @@
                 if (ev.key === 'ArrowLeft' || ev.key === 'Left') {
                     ev.preventDefault();
                     const prev = star.previousElementSibling;
-                    if (prev) { prev.focus(); }
-                    else { starEls[0].focus(); }
+                    if (prev) {
+                        prev.focus();
+                    } else {
+                        starEls[0].focus();
+                    }
                 }
                 if (ev.key === 'ArrowRight' || ev.key === 'Right') {
                     ev.preventDefault();
                     const next = star.nextElementSibling;
-                    if (next) { next.focus(); }
-                    else { starEls[starEls.length - 1].focus(); }
+                    if (next) {
+                        next.focus();
+                    } else {
+                        starEls[starEls.length - 1].focus();
+                    }
                 }
             });
         });
@@ -381,7 +407,7 @@
             form.addEventListener('submit', (e) => {
                 // if underlying rating field exists and is empty, try to set it from UI
                 const currentValue = (ratingField && ratingField.type === 'single') ? ratingField.field.value :
-                    (ratingField && ratingField.type === 'radios' ? Array.from(ratingField.field).find(r=>r.checked)?.value : null);
+                    (ratingField && ratingField.type === 'radios' ? Array.from(ratingField.field).find(r => r.checked)?.value : null);
 
                 const uiValue = starEls.reduce((acc, s, i) => acc || (s.classList.contains('active') ? (i + 1) : 0), 0);
 

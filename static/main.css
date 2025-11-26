@@ -1,14 +1,4 @@
 /* General */
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-size: cover;
-    height: 100vh;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
 /* NAVIGATION */
 nav {
